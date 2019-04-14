@@ -1,0 +1,39 @@
+.Header {
+  /* background-color: #F0F0F0; */
+  padding: 6px;
+  /* position: fixed; */
+  width: 100%;
+  /* z-index: 2; */
+}
+
+.Header_Img {
+  float: right;
+  height: 35px;
+  border-radius: 30px;
+  margin-top: 4px;
+}
+
+.Header_Name {
+  margin-left: 10px;
+  margin-right: 20px;
+  margin-top: 12px;
+  float: right;
+}
+
+.Header_Logout {
+  margin-left: 10px;
+  margin-right: 20px;
+  margin-top: 7px;
+  float: right;
+  background: #95A4D6;
+  border-radius: 100px;
+  border: none;
+  padding: 10px 20px;
+  color: #fff;
+  transition: background-color 0.5s;
+}
+
+.Header_Logout:hover {
+  cursor: pointer;
+  background: #8594C4;
+}

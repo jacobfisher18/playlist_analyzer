@@ -1,0 +1,47 @@
+.TrackList {
+  padding: 20px 70px;
+}
+
+.TrackList tr:hover {
+  background-color: #eee;
+}
+
+.TrackList table {
+  border-collapse: collapse;
+}
+
+.TrackList th {
+  text-align: left;
+  padding-bottom: 10px;
+  padding-top: 10px;
+  font-weight: 400;
+  color: #BBB;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}
+
+.Tracklist_Title {
+  min-width: 300px;
+  max-width: 300px;
+}
+
+.Tracklist_Artist_Album {
+  min-width: 150px;
+  max-width: 150px;
+}
+
+.TrackList td {
+  padding: 12px 0px;
+  padding-right: 20px;
+  list-style-type: none;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: solid 1px #D8D8D8;
+  border-collapse: collapse;
+}
+
+.Tracklist_Popularity {
+  color: #BBB;
+}

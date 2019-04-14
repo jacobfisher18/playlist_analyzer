@@ -1,0 +1,15 @@
+.FeatureBar_Outer {
+  background: #D8D8D8;
+  border-radius: 100px;
+  height: 20px;
+}
+
+.FeatureBar_Inner {
+  background: #757373;
+  border-radius: 100px;
+  height: 20px;
+}
+
+.FeatureBar_Inner:hover {
+  background: #666;
+}
