@@ -1,28 +1,28 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './Overview.css';
 
-class Overview extends Component {
-  render() {
-    return (
-      <div className="Overview">
-        <p>
-Owner:
-{' '}
-{this.props.playlist.owner.display_name}
-</p>
-        <p>
-          {this.props.playlist.public ? 'PUBLIC' : 'PRIVATE'}
-          {' | '}
-          {this.props.playlist.collaborative ? 'COLLABORATIVE' : 'NOT COLLABORATIVE'}
-        </p>
-        <p>
-{this.props.playlist.tracks.total}
-{' '}
-tracks
-</p>
-      </div>
-    );
-  }
+function Overview(props) {
+  const { playlist } = props;
+
+  return (
+    <div className="Overview">
+      <p>
+        Owner:
+        {' '}
+        {playlist.owner.display_name}
+      </p>
+      <p>
+        {playlist.public ? 'PUBLIC' : 'PRIVATE'}
+        {' | '}
+        {playlist.collaborative ? 'COLLABORATIVE' : 'NOT COLLABORATIVE'}
+      </p>
+      <p>
+        {playlist.tracks.total}
+        {' '}
+        tracks
+      </p>
+    </div>
+  );
 }
 
 export default Overview;

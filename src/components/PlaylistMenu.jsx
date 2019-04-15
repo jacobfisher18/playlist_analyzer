@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
-import { playlist_menu_tabs } from '../utilities/constants.js';
+import { playlist_menu_tabs } from '../utilities/constants';
 import './PlaylistMenu.css';
 
 class PlaylistMenu extends Component {
   renderTabs() {
+    const { activeTab, selectTab } = this.props;
+
     return playlist_menu_tabs.map(tab => (
       <li
-        className={this.props.activeTab === tab ? 'PlaylistMenu_Active_Tab' : ''}
-        onClick={() => this.props.selectTab(tab)}
+        className={activeTab === tab ? 'PlaylistMenu_Active_Tab' : ''}
+        onClick={() => selectTab(tab)}
         key={tab}
       >
         {tab}

@@ -14,10 +14,6 @@ import './Home.css';
 
 class Home extends Component {
 
-  static propTypes = {
-    cookies: instanceOf(Cookies).isRequired
-  };
-
   constructor(props) {
     super(props);
 
@@ -176,5 +172,9 @@ class Home extends Component {
     );
   }
 }
+
+Home.propTypes = {
+  cookies: instanceOf(Cookies).isRequired,
+};
 
 export default withCookies(Home);

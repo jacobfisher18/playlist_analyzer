@@ -6,6 +6,7 @@
     "react-scripts": "2.1.2"
   },
   "dependencies": {
+    "prop-types": "^15.7.2",
     "query-string": "^6.2.0",
     "react": "^16.7.0",
     "react-cookie": "^3.0.8",
