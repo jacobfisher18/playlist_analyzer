@@ -7,16 +7,16 @@ import './Landing.css';
 
 class Landing extends Component {
   componentDidMount() {
-    const { location } = this.props;
+    // const { location } = this.props;
 
-    const access_token = queryString.parse(location.hash).access_token || '';
+    // const access_token = queryString.parse(location.hash).access_token || '';
 
-    if (access_token) {
-      this.props.cookies.set('access_token', access_token);
-      this.props.history.push('/home');
-    } else if (this.props.cookies.get('access_token')) {
-      this.props.history.push('/home');
-    }
+    // if (access_token) {
+    //   this.props.cookies.set('access_token', access_token);
+    //   this.props.history.push('/home');
+    // } else if (this.props.cookies.get('access_token')) {
+    //   this.props.history.push('/home');
+    // }
   }
 
   render() {
