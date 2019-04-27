@@ -1,13 +1,13 @@
 {
   "main.css": "/playlist_analyzer/static/css/main.bab08ce5.chunk.css",
-  "main.js": "/playlist_analyzer/static/js/main.c3a0266e.chunk.js",
-  "main.js.map": "/playlist_analyzer/static/js/main.c3a0266e.chunk.js.map",
-  "static/js/1.cbf9a0af.chunk.js": "/playlist_analyzer/static/js/1.cbf9a0af.chunk.js",
-  "static/js/1.cbf9a0af.chunk.js.map": "/playlist_analyzer/static/js/1.cbf9a0af.chunk.js.map",
+  "main.js": "/playlist_analyzer/static/js/main.d795c093.chunk.js",
+  "main.js.map": "/playlist_analyzer/static/js/main.d795c093.chunk.js.map",
+  "static/js/1.c8f3f2a4.chunk.js": "/playlist_analyzer/static/js/1.c8f3f2a4.chunk.js",
+  "static/js/1.c8f3f2a4.chunk.js.map": "/playlist_analyzer/static/js/1.c8f3f2a4.chunk.js.map",
   "runtime~main.js": "/playlist_analyzer/static/js/runtime~main.826880d6.js",
   "runtime~main.js.map": "/playlist_analyzer/static/js/runtime~main.826880d6.js.map",
   "static/css/main.bab08ce5.chunk.css.map": "/playlist_analyzer/static/css/main.bab08ce5.chunk.css.map",
   "index.html": "/playlist_analyzer/index.html",
-  "precache-manifest.69a790240caab2328ffbaabec5692019.js": "/playlist_analyzer/precache-manifest.69a790240caab2328ffbaabec5692019.js",
+  "precache-manifest.2d36884e7b5a419ef7dedc42fad2feae.js": "/playlist_analyzer/precache-manifest.2d36884e7b5a419ef7dedc42fad2feae.js",
   "service-worker.js": "/playlist_analyzer/service-worker.js"
 }
