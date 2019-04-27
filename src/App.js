@@ -9,7 +9,7 @@ class App extends Component {
   render() {
     return (
       <CookiesProvider>
-      <Router>
+        <Router basename={process.env.PUBLIC_URL}>
         <div>
           <Route path='/' exact component={Landing} />
           <Route path='/home' component={Home} />
