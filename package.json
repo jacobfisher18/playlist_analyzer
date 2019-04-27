@@ -31,5 +31,5 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "homepage": "https://jacobfisher18.github.io/playlist_analyzer"
+  "homepage": "https://jacobfisher18.github.io/playlist_analyzer/"
 }
