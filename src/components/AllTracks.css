@@ -1,0 +1,77 @@
+.AllTracks {
+  padding: 20px 70px;
+}
+
+.AllTracks_TrackList {
+  width: 100%;
+}
+
+.AllTracks_TrackList tr:hover {
+  background-color: #eee;
+}
+
+.AllTracks_TrackList table {
+  border-collapse: collapse;
+}
+
+.AllTracks_TrackList th {
+  text-align: left;
+  padding-bottom: 10px;
+  padding-top: 10px;
+  font-weight: 400;
+  color: #BBB;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}
+
+.AllTracks_TrackList td {
+  padding: 12px 0px;
+  padding-right: 20px;
+  list-style-type: none;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: solid 1px #D8D8D8;
+  border-collapse: collapse;
+  max-width: 150px;
+}
+
+.SearchBar {
+  border: none;
+  width: 250px;
+  padding: 10px 15px;
+  background: transparent;
+  font-size: 14px;
+  border-radius: 3px;
+  margin: 10px 0px;
+}
+
+.SearchBar:focus {
+  outline: none;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.PlaylistHeader_Name {
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.PlaylistHeader_Subtitle {
+  font-weight: normal;
+  font-size: 15px;
+}
+
+.Bold {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.Spinner {
+  height: 50px;
+  margin-top: 20%;
+}
+
+.centered {
+  text-align: center;
+}

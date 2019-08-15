@@ -5,5 +5,6 @@ export const authWithSpotify = () => {
     '?response_type=token' +
     '&client_id=' + clientID +
     (scopes ? '&scope=' + encodeURIComponent(scopes) : '') +
-    '&redirect_uri=' + encodeURIComponent(redirect_uri)
+    '&redirect_uri=' + encodeURIComponent(redirect_uri) + 
+    '&show_dialog=true'
 }

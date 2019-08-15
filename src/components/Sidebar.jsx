@@ -12,9 +12,16 @@ class Sidebar extends Component {
 
   renderPlaylists() {
     if (this.props.playlists) {return this.props.playlists.map(p => <li
-      className={this.props.currentPlaylist.name === p.name ? 'Sidebar_Playlist_Selected' : 'Sidebar_Playlist_Unselected'}
+      className={
+        (this.props.currentPlaylist.name === p.name && this.props.activePage === 'PLAYLIST')
+          ? 'Sidebar_Playlist_Selected'
+          : 'Sidebar_Playlist_Unselected'}
       key={p.name}
-      onClick={() => this.props.setCurrentPlaylist(p)}>
+      onClick={() => {
+        this.props.setActivePage('PLAYLIST')
+        this.props.setCurrentPlaylist(p)
+      }
+      }>
       {p.name}
     </li>);}
   }
@@ -22,7 +29,16 @@ class Sidebar extends Component {
   render() {
     return (
       <div className="Sidebar">
-        <h4 className="Sidebar_Title_Playlists">YOUR PLAYLISTS</h4>
+        <h4 className="Sidebar_Title_Playlists">LIBRARY</h4>
+        <li
+          className={
+            (this.props.activePage === 'ALL_TRACKS')
+              ? 'Sidebar_Playlist_Selected'
+              : 'Sidebar_Playlist_Unselected'}
+          onClick={() => { this.props.setActivePage('ALL_TRACKS') }}>
+          All Tracks
+        </li>
+        <h4 className="Sidebar_Title_Playlists">PLAYLISTS</h4>
         {this.renderPlaylists()}
       </div>
     );

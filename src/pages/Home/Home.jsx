@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { instanceOf } from 'prop-types';
 import { withCookies, Cookies } from 'react-cookie';
 import Sidebar from '../../components/Sidebar.jsx';
+import AllTracks from '../../components/AllTracks'
 import Header from '../../components/Header.jsx';
 import PlaylistHeader from '../../components/PlaylistHeader.jsx';
 import TrackList from '../../components/TrackList.jsx';
@@ -42,6 +43,7 @@ class Home extends Component {
       currentPlaylistTracks: [],
       currentPlaylistTrackStats: [],
       activeTab: playlist_menu_tabs[0],
+      activePage: 'ALL_TRACKS',
     };
   }
 
@@ -61,7 +63,8 @@ class Home extends Component {
   }
 
   logout() {
-    this.props.cookies.set('access_token', '');
+    // this.props.cookies.set('access_token', '');
+    this.props.cookies.remove('access_token');
     this.setState({ access_token: '' });
   }
 
@@ -86,6 +89,10 @@ class Home extends Component {
   setCurrentPlaylist(currentPlaylist) {
     this.setState({ currentPlaylist });
     this.getTracks(currentPlaylist.id);
+  }
+
+  setActivePage(activePage) {
+    this.setState({ activePage });
   }
 
   /* Get all the tracks for a given playlist*/
@@ -154,18 +161,38 @@ class Home extends Component {
     return (
       <div className="Home">
         <Header user={this.state.user} logout={this.logout.bind(this)}></Header>
-        <Sidebar currentPlaylist={this.state.currentPlaylist} playlists={this.state.playlists} setCurrentPlaylist={this.setCurrentPlaylist.bind(this)}></Sidebar>
+        <Sidebar
+          currentPlaylist={this.state.currentPlaylist}
+          playlists={this.state.playlists}
+          setCurrentPlaylist={this.setCurrentPlaylist.bind(this)}
+          setActivePage={this.setActivePage.bind(this)}
+          activePage={this.state.activePage}
+        />
         <div className="Home_Main_Content">
-          {this.state.currentPlaylist.name ? (
-            <div>
-              <PlaylistHeader playlist={this.state.currentPlaylist} access_token={this.state.access_token}></PlaylistHeader>
-              <PlaylistMenu activeTab={this.state.activeTab} selectTab={this.selectTab.bind(this)}></PlaylistMenu>
-              {this.renderActiveTab()}
-            </div>
-          ) : (
-              <p></p>
-            )}
-          {/* <button onClick={() => this.getTrackStats()}>Get Track Stats</button> */}
+          {(() => {
+            switch (this.state.activePage) {
+              case 'PLAYLIST':
+                return (
+                  this.state.currentPlaylist.name ? (
+                    <div>
+                      <PlaylistHeader playlist={this.state.currentPlaylist} access_token={this.state.access_token}></PlaylistHeader>
+                      <PlaylistMenu activeTab={this.state.activeTab} selectTab={this.selectTab.bind(this)}></PlaylistMenu>
+                      {this.renderActiveTab()}
+                    </div>
+                  ) : (
+                      <p></p>
+                    )
+                )
+              case 'ALL_TRACKS':
+                return (
+                  <AllTracks
+                    access_token={this.state.access_token}
+                  />
+                )
+              default:
+                return null;
+            }
+          })()}
         </div>
         
       </div>
