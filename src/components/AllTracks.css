@@ -6,7 +6,12 @@
   width: 100%;
 }
 
-.AllTracks_TrackList tr:hover {
+.TrackList_HeaderCell:hover {
+  cursor: pointer;
+  color: #222;
+}
+
+.TrackList_Row:hover {
   background-color: #eee;
 }
 

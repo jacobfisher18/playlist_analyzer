@@ -150,14 +150,14 @@ class AllTracks extends Component {
   }
 
   renderFilteredTracks() {
-    const { filteredTracks } = this.state
+    let { filteredTracks } = this.state
     const maxSize = 500;
 
     if (!filteredTracks) return null;
 
     return filteredTracks.slice(0, maxSize).map((track) => {
       return (
-        <tr key={track.key}>
+        <tr key={track.key} className="TrackList_Row">
           <td className="Tracklist_Playlist">{track.playlist_name}</td>
           <td className="Tracklist_Title">{track.trackName}</td>
           <td className="Tracklist_Artist_Album">{track.artist}</td>
@@ -173,6 +173,16 @@ class AllTracks extends Component {
     return this.state.tracks.reduce((accumulator, currentValue) => {
       return accumulator + currentValue.items.length;
     }, 0)
+  }
+
+  filterByKey(key) {
+    this.setState((prevState) => {
+      return {
+        filteredTracks: prevState.filteredTracks.sort((a, b) => {
+          return a[key].toLowerCase().localeCompare(b[key].toLowerCase());
+        })
+      }
+    });
   }
 
   render() {
@@ -198,10 +208,22 @@ class AllTracks extends Component {
           <table className="AllTracks_TrackList">
             <tbody>
               <tr>
-                <th>PLAYLIST</th>
-                <th>TITLE</th>
-                <th>ARTIST</th>
-                <th>ALBUM</th>
+                <th
+                  className="TrackList_HeaderCell"
+                  onClick={() => this.filterByKey('playlist_name')}
+                >PLAYLIST</th>
+                <th
+                  className="TrackList_HeaderCell"
+                  onClick={() => this.filterByKey('trackName')}
+                >TITLE</th>
+                <th
+                  className="TrackList_HeaderCell"
+                  onClick={() => this.filterByKey('artist')}
+                >ARTIST</th>
+                <th
+                  className="TrackList_HeaderCell"
+                  onClick={() => this.filterByKey('album')}
+                >ALBUM</th>
               </tr>
                 {this.renderFilteredTracks()}
             </tbody>
