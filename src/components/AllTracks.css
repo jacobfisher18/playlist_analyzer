@@ -39,7 +39,8 @@
 
 .SearchBar {
   border: none;
-  width: 250px;
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px 15px;
   background: transparent;
   font-size: 14px;
