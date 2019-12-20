@@ -23,8 +23,8 @@ class AllTracks extends Component {
     this.getPlaylists().then(() => {
       this.getAllTracks().then(() => {
         this.applyFilter(() => this.setState({ loading: false }));
-      }, () => this.setState({ error: true }))
-    }, () => this.setState({ error: true }))
+      }, () => { this.setState({ error: true }) })
+    }, () => { this.setState({ error: true }) })
   }
 
   getAllTracks() {
@@ -79,13 +79,7 @@ class AllTracks extends Component {
   getTracks(playlist_id, playlist_name) {
     const spotifyURL = `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`;
 
-    return new Promise((res, rej) => {
-      this.recursivelyGetTracks([], spotifyURL, playlist_id, playlist_name).then(() => {
-        res();
-      }, () => {
-        rej();
-      })
-    })
+    return this.recursivelyGetTracks([], spotifyURL, playlist_id, playlist_name);
   }
 
   /* Recursive function for getting playlist tracks one page at a time */
@@ -100,7 +94,7 @@ class AllTracks extends Component {
             reject();
           });
         } else {
-          if (result.length === 0) reject();
+          if (result.length === 0 && myJson.items.length !== 0) reject();
           else {
             this.setState(prevState => ({
               tracks: prevState.tracks.concat([{
