@@ -1,3 +1,5 @@
+*** Note: This branch backs up the sidebar and playlist features, which were removed from master because they weren't used.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Playlist Analyzer
