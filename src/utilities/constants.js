@@ -10,5 +10,3 @@ export const redirect_uri =
   (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') ?
     'http://localhost:3000/' :
     'https://jacobfisher18.github.io/playlist_analyzer/'
-
-export const playlist_menu_tabs = ['OVERVIEW', 'TRACKS', 'STATS'];

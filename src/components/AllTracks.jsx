@@ -116,25 +116,33 @@ class AllTracks extends Component {
 
     for (let i = 0; i < tracks.length; i++) {
       for (let j = 0; j < tracks[i].items.length; j++) {
+
+        if (!tracks[i].items[j] || !tracks[i].items[j].track) {
+          continue;
+        }
+
+        const item = tracks[i].items[j];
+        const track = item.track;
+
         const trackNameMatch =
-          (tracks[i].items[j].track.name).toLowerCase()
+          (track.name).toLowerCase()
             .includes(searchText.toLowerCase())
         
         const artistMatch =
-          tracks[i].items[j].track.artists.map(el => el.name).join(' ').toLowerCase()
+        track.artists.map(el => el.name).join(' ').toLowerCase()
             .includes(searchText.toLowerCase())
         
         const albumMatch =
-          (tracks[i].items[j].track.album.name).toLowerCase()
+          (track.album.name).toLowerCase()
             .includes(searchText.toLowerCase())
 
         if (trackNameMatch || artistMatch || albumMatch) {
           filteredTracks.push({
-            key: `${tracks[i].playlist_name}-${tracks[i].items[j].track.id}`,
+            key: `${tracks[i].playlist_name}-${track.id}`,
             playlist_name: tracks[i].playlist_name,
-            trackName: tracks[i].items[j].track.name,
-            artist: tracks[i].items[j].track.artists.map(el => el.name).join(', '),
-            album: tracks[i].items[j].track.album.name,
+            trackName: track.name,
+            artist: track.artists.map(el => el.name).join(', '),
+            album: track.album.name,
           })
         }
       }
