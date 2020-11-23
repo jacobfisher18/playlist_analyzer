@@ -3,7 +3,7 @@ import { instanceOf } from 'prop-types';
 import { withCookies, Cookies } from 'react-cookie';
 import AllTracks from '../../components/AllTracks'
 import Header from '../../components/Header.jsx';
-import { spotifyGetRequest } from '../../utilities/apiRequests.js';
+import { getUserProfile } from '../../api/spotify'
 import './Home.css';
 
 class Home extends Component {
@@ -24,31 +24,27 @@ class Home extends Component {
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     if (!this.state.access_token) {
       this.props.history.push("/")
     } else {
-      this.getUserProfile();
+      const user = await getUserProfile(this.state.access_token)
+      if (user) {
+        this.setState({ user });
+      } else {
+        await this.logout()
+      }
     }
   }
 
-  componentDidUpdate() {
-    if (!this.state.access_token) {
-      this.props.history.push("/")
-    }
-  }
-
-  logout() {
-    this.props.cookies.remove('access_token');
-    this.setState({ access_token: '' });
-  }
-
-  getUserProfile() {
-    const spotifyURL = 'https://api.spotify.com/v1/me';
-
-    spotifyGetRequest(spotifyURL, this.state.access_token, (myJson) => {
-      this.setState({ user: myJson });
-    });
+  /**
+   * 1. Removes the access token cookie
+   * 2. Sets the access token in the state to ''
+   * 3. Navigates to the homepage
+   */
+  async logout() {
+    await this.props.cookies.remove('access_token');
+    this.setState({ access_token: '' }, () => { this.props.history.push("/") });
   }
 
   render() {

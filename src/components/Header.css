@@ -1,27 +1,24 @@
 .Header {
-  padding: 6px;
-  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 12px;
 }
 
 .Header_Img {
-  float: right;
   height: 35px;
   border-radius: 30px;
-  margin-top: 4px;
 }
 
 .Header_Name {
   margin-left: 10px;
-  margin-right: 20px;
-  margin-top: 12px;
-  float: right;
+  margin-right: 15px;
 }
 
 .Header_Logout {
   margin-left: 10px;
   margin-right: 20px;
-  margin-top: 7px;
-  float: right;
   background: #95A4D6;
   border-radius: 100px;
   border: none;

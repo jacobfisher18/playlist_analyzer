@@ -1,4 +1,4 @@
-import { clientID, scopes, redirect_uri } from './constants';
+import { clientID, scopes, redirect_uri } from '../utilities/constants';
 
 export const authWithSpotify = () => {
   window.location = 'https://accounts.spotify.com/authorize' +

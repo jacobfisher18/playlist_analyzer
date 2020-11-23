@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import queryString from 'query-string';
 import { instanceOf } from 'prop-types';
 import { withCookies, Cookies } from 'react-cookie';
-import { authWithSpotify } from '../../utilities/auth';
+import { authWithSpotify } from '../../api/auth';
 import './Landing.css';
 
 class Landing extends Component {

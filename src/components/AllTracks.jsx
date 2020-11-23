@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import { spotifyGetRequest } from '../utilities/apiRequests'
 import spinner from '../assets/spinner.gif'
 import './AllTracks.css';
+import { getAllTracksForManyPlaylists, getAllUserPlaylists } from '../api/spotify';
 
 class AllTracks extends Component {
 
@@ -10,7 +10,7 @@ class AllTracks extends Component {
 
     this.state = {
       playlists: [],
-      tracks: [],
+      playlistNameToTracksMap: {},
       filteredTracks: [],
       searchText: '',
       loading: false,
@@ -18,118 +18,65 @@ class AllTracks extends Component {
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.setState({ loading: true })
-    this.getPlaylists().then(() => {
-      this.getAllTracks().then(() => {
-        this.applyFilter(() => this.setState({ loading: false }));
-      }, () => { this.setState({ error: true }) })
-    }, () => { this.setState({ error: true }) })
-  }
 
-  getAllTracks() {
-    const promises = [];
-    for (let i = 0; i < this.state.playlists.length; i++) {
-      promises.push(this.getTracks(this.state.playlists[i].id, this.state.playlists[i].name))
+    const playlists = await getAllUserPlaylists(this.props.access_token)
+
+    if (playlists === null) {
+      this.setState({ loading: false, error: true })
+      return
+    } else if (playlists.length === 0) {
+      // TODO: handle when user has 0 playlists
+      console.error('Did not find any playlists.')
+      this.setState({ loading: false, error: true })
+      return
     }
 
-    return Promise.all(promises);
-  }
+    const playlistNameToTracksMap = await getAllTracksForManyPlaylists(this.props.access_token, playlists)
 
-  // calls recursivelyGetPlaylists to get all the user's playlists
-  getPlaylists() {
-    this.setState({ playlists: [] })
-    const limit = 50;
-    const spotifyURL = `https://api.spotify.com/v1/me/playlists?&limit=${limit}`;
+    if (playlistNameToTracksMap === null) {
+      this.setState({ loading: false, error: true })
+      return
+    } else if (Object.values(playlistNameToTracksMap).every(item => item.length === 0)) {
+      // TODO: handle an edge case where user has 0 tracks in any playlists
+      console.error('Did not find any tracks in any playlists.')
+      this.setState({ loading: false, error: true })
+    }
 
-    return new Promise((res, rej) => {
-      this.recursivelyGetPlaylists(spotifyURL).then(() => {
-        res();
-      }, () => {
-        rej();
-      })
-    })
-  }
-
-  // recursively gets user's playlists 50 at a time from spotify api
-  recursivelyGetPlaylists(url) {
-    return new Promise((resolve, reject) => {
-      spotifyGetRequest(url, this.props.access_token, (myJson) => {
-        this.setState({
-          playlists: this.state.playlists.concat(myJson.items)
-        });
-        if (myJson.next) {
-          this.recursivelyGetPlaylists(myJson.next).then(() => {
-            resolve();
-          }, () => {
-            reject();
-          });
-        } else {
-          if (this.state.playlists.length === 0) {
-            reject();
-          } else {
-            resolve();
-          }
-        }
-      })
-    })
-  }
-
-  /* Get all the tracks for a given playlist*/
-  getTracks(playlist_id, playlist_name) {
-    const spotifyURL = `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`;
-
-    return this.recursivelyGetTracks([], spotifyURL, playlist_id, playlist_name);
-  }
-
-  /* Recursive function for getting playlist tracks one page at a time */
-  recursivelyGetTracks(result, url, playlist_id, playlist_name) {
-    return new Promise((resolve, reject) => {
-      spotifyGetRequest(url, this.props.access_token, (myJson) => {
-        result = result.concat(myJson.items)
-        if (myJson.next) {
-          this.recursivelyGetTracks(result, myJson.next, playlist_id, playlist_name).then(() => {
-            resolve();
-          }, () => {
-            reject();
-          });
-        } else {
-          if (result.length === 0 && myJson.items.length !== 0) reject();
-          else {
-            this.setState(prevState => ({
-              tracks: prevState.tracks.concat([{
-                playlist_name,
-                playlist_id,
-                items: result,
-              }])
-            }), () => resolve());
-          }
-        }
-      });
+    this.setState({ playlistNameToTracksMap }, () => {
+      this.applyFilter(() => this.setState({ loading: false }))
     })
   }
 
   applyFilter(callback) {
-    const { tracks, searchText } = this.state;
+    const { playlistNameToTracksMap, searchText } = this.state;
 
     let filteredTracks = [];
 
-    for (let i = 0; i < tracks.length; i++) {
-      for (let j = 0; j < tracks[i].items.length; j++) {
+    for (const [playlistName, tracks] of Object.entries(playlistNameToTracksMap)) {
+      for (const trackObj of tracks) {
 
-        if (!tracks[i].items[j] || !tracks[i].items[j].track) {
-          continue;
+        const track = trackObj.track
+  
+        if (!track) {
+          console.error(`Track does not have expected data`)
+          continue
         }
 
-        const item = tracks[i].items[j];
-        const track = item.track;
+        // We'll do some validation for expected properties on the data
+        if (!track.name || !track.artists || !track.album || !track.id) {
+          console.error(`Track does not have expected data`)
+          continue
+        }
 
         const trackNameMatch =
           (track.name).toLowerCase()
             .includes(searchText.toLowerCase())
         
+        const joinedArtists = track.artists.map(el => el.name).join(', ')
         const artistMatch =
-        track.artists.map(el => el.name).join(' ').toLowerCase()
+        joinedArtists.toLowerCase()
             .includes(searchText.toLowerCase())
         
         const albumMatch =
@@ -138,10 +85,10 @@ class AllTracks extends Component {
 
         if (trackNameMatch || artistMatch || albumMatch) {
           filteredTracks.push({
-            key: `${tracks[i].playlist_name}-${track.id}`,
-            playlist_name: tracks[i].playlist_name,
+            key: `${playlistName}-${track.id}`,
+            playlistName: playlistName,
             trackName: track.name,
-            artist: track.artists.map(el => el.name).join(', '),
+            artist: joinedArtists,
             album: track.album.name,
           })
         }
@@ -160,7 +107,7 @@ class AllTracks extends Component {
     return filteredTracks.slice(0, maxSize).map((track) => {
       return (
         <tr key={track.key} className="TrackList_Row">
-          <td className="Tracklist_Playlist">{track.playlist_name}</td>
+          <td className="Tracklist_Playlist">{track.playlistName}</td>
           <td className="Tracklist_Title">{track.trackName}</td>
           <td className="Tracklist_Artist_Album">{track.artist}</td>
           <td className="Tracklist_Artist_Album">{track.album}</td>
@@ -170,11 +117,10 @@ class AllTracks extends Component {
   }
 
   numTracks() {
-    if (!(this.state.tracks) || this.state.tracks.length === 0) return 0;
+    const { playlistNameToTracksMap } = this.state
+    if (!playlistNameToTracksMap) return 0
 
-    return this.state.tracks.reduce((accumulator, currentValue) => {
-      return accumulator + currentValue.items.length;
-    }, 0)
+    return Object.values(playlistNameToTracksMap).map(item => item.length).reduce((acc, curr) => acc + curr, 0)
   }
 
   filterByKey(key) {
@@ -212,7 +158,7 @@ class AllTracks extends Component {
               <tr>
                 <th
                   className="TrackList_HeaderCell"
-                  onClick={() => this.filterByKey('playlist_name')}
+                  onClick={() => this.filterByKey('playlistName')}
                 >PLAYLIST</th>
                 <th
                   className="TrackList_HeaderCell"
