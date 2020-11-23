@@ -58,7 +58,7 @@ class AllTracks extends Component {
       for (const trackObj of tracks) {
 
         const track = trackObj.track
-  
+
         if (!track) {
           console.error(`Track does not have expected data`)
           continue
@@ -73,12 +73,12 @@ class AllTracks extends Component {
         const trackNameMatch =
           (track.name).toLowerCase()
             .includes(searchText.toLowerCase())
-        
+
         const joinedArtists = track.artists.map(el => el.name).join(', ')
         const artistMatch =
-        joinedArtists.toLowerCase()
+          joinedArtists.toLowerCase()
             .includes(searchText.toLowerCase())
-        
+
         const albumMatch =
           (track.album.name).toLowerCase()
             .includes(searchText.toLowerCase())
@@ -109,8 +109,8 @@ class AllTracks extends Component {
         <tr key={track.key} className="TrackList_Row">
           <td className="Tracklist_Playlist">{track.playlistName}</td>
           <td className="Tracklist_Title">{track.trackName}</td>
-          <td className="Tracklist_Artist_Album">{track.artist}</td>
-          <td className="Tracklist_Artist_Album">{track.album}</td>
+          <td className="Tracklist_Artist_Album Tracklist_Artist">{track.artist}</td>
+          <td className="Tracklist_Artist_Album Tracklist_Album">{track.album}</td>
         </tr>
       )
     })
@@ -137,47 +137,48 @@ class AllTracks extends Component {
     return (
       this.state.error ? <p>ERROR</p> :
         this.state.loading ? <div className="centered"><img src={spinner} className="Spinner" alt="loading..." /></div> :
-      <div className="AllTracks">
-          <p className="PlaylistHeader_Name">All Tracks</p>
+          <div className="AllTracks">
+            <p className="PlaylistHeader_Name">Spotify Playlist Analyzer</p>
+            <p className="PlaylistSubHeader_Name">Search all tracks on all your playlists at once.</p>
             <p className="PlaylistHeader_Subtitle">
               <span className="Bold">{this.numTracks()}</span> total tracks • <span className="Bold">{this.state.filteredTracks.length}</span> filtered tracks
             </p>
             <p className="PlaylistHeader_Subtitle"></p>
-          <form onSubmit={(e) => { e.preventDefault(); this.applyFilter() }}>
-          <input
-            className="SearchBar"
-            placeholder="Search a track name, artist, or album..."
-            type="text"
-            onChange={(e) => this.setState({ searchText: e.target.value })}
-            value={this.state.searchText}
-            />
-        </form>
-        <div>
-          <table className="AllTracks_TrackList">
-            <tbody>
-              <tr>
-                <th
-                  className="TrackList_HeaderCell"
-                  onClick={() => this.filterByKey('playlistName')}
-                >PLAYLIST</th>
-                <th
-                  className="TrackList_HeaderCell"
-                  onClick={() => this.filterByKey('trackName')}
-                >TITLE</th>
-                <th
-                  className="TrackList_HeaderCell"
-                  onClick={() => this.filterByKey('artist')}
-                >ARTIST</th>
-                <th
-                  className="TrackList_HeaderCell"
-                  onClick={() => this.filterByKey('album')}
-                >ALBUM</th>
-              </tr>
-                {this.renderFilteredTracks()}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            <form onSubmit={(e) => { e.preventDefault(); this.applyFilter() }}>
+              <input
+                className="SearchBar"
+                placeholder="Search a track name, artist, or album..."
+                type="text"
+                onChange={(e) => this.setState({ searchText: e.target.value })}
+                value={this.state.searchText}
+              />
+            </form>
+            <div>
+              <table className="AllTracks_TrackList">
+                <tbody>
+                  <tr>
+                    <th
+                      className="TrackList_HeaderCell"
+                      onClick={() => this.filterByKey('playlistName')}
+                    >PLAYLIST</th>
+                    <th
+                      className="TrackList_HeaderCell"
+                      onClick={() => this.filterByKey('trackName')}
+                    >TITLE</th>
+                    <th
+                      className="TrackList_HeaderCell TrackList_HeaderCell_Artist"
+                      onClick={() => this.filterByKey('artist')}
+                    >ARTIST</th>
+                    <th
+                      className="TrackList_HeaderCell TrackList_HeaderCell_Album"
+                      onClick={() => this.filterByKey('album')}
+                    >ALBUM</th>
+                  </tr>
+                  {this.renderFilteredTracks()}
+                </tbody>
+              </table>
+            </div>
+          </div>
     );
   }
 }

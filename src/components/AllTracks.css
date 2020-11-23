@@ -59,13 +59,26 @@
 }
 
 .PlaylistHeader_Name {
-  font-size: 40px;
+  color: #95A4D6;
+  text-align: center;
+  font-size: 45px;
   font-weight: 700;
+  margin-bottom: 0px;
+  margin-top: 20px;
+}
+
+.PlaylistSubHeader_Name {
+  text-align: center;
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 50px;
 }
 
 .PlaylistHeader_Subtitle {
+  text-align: center;
   font-weight: normal;
   font-size: 15px;
+  margin-bottom: 30px;
 }
 
 .Bold {
@@ -80,4 +93,32 @@
 
 .centered {
   text-align: center;
+}
+
+@media only screen and (max-width: 900px) {
+  .TrackList_HeaderCell_Album {
+    display: none;
+  }
+
+  .Tracklist_Album {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  .TrackList_HeaderCell_Artist {
+    display: none;
+  }
+
+  .Tracklist_Artist {
+    display: none;
+  }
+
+  .PlaylistHeader_Name {
+    font-size: 30px;
+  }
+
+  .PlaylistSubHeader_Name {
+    font-size: 13px;
+  }
 }
