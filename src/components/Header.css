@@ -19,7 +19,7 @@
 .Header_Logout {
   margin-left: 10px;
   margin-right: 20px;
-  background: #95A4D6;
+  background: #95a4d6;
   border-radius: 100px;
   border: none;
   padding: 10px 20px;
@@ -29,5 +29,5 @@
 
 .Header_Logout:hover {
   cursor: pointer;
-  background: #8594C4;
+  background: #8594c4;
 }

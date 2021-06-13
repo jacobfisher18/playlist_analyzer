@@ -1,6 +1,6 @@
-import React from 'react';
-import ReactTooltip from 'react-tooltip';
-import './FeatureBar.css';
+import React from "react";
+import ReactTooltip from "react-tooltip";
+import "./FeatureBar.css";
 
 function FeatureBar(props) {
   const maxidth = 400;
@@ -16,7 +16,11 @@ function FeatureBar(props) {
 
   return (
     <div className="FeatureBar_Outer" style={outerWidthStyle}>
-      <div className="FeatureBar_Inner" style={innerWidthStyle} data-tip={value} />
+      <div
+        className="FeatureBar_Inner"
+        style={innerWidthStyle}
+        data-tip={value}
+      />
       <ReactTooltip effect="solid" />
     </div>
   );

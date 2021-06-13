@@ -1,5 +1,5 @@
 .Sidebar {
-  background-color: #F0F0F0;
+  background-color: #f0f0f0;
   height: 100%;
   position: fixed;
   top: 0;
@@ -12,8 +12,8 @@
   padding-left: 0px;
   padding-top: 60px;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-  box-sizing: border-box;         /* Opera/IE 8+ */
+  -moz-box-sizing: border-box; /* Firefox, other Gecko */
+  box-sizing: border-box; /* Opera/IE 8+ */
   padding-bottom: 80px;
 }
 
@@ -28,7 +28,7 @@
 
 .Sidebar_Playlist_Selected {
   font-weight: 700;
-  border-left: solid 10px #2FE48F;
+  border-left: solid 10px #2fe48f;
   padding-left: 30px;
 }
 
@@ -44,7 +44,7 @@
 
 .Sidebar li:hover {
   cursor: pointer;
-  color: #2FD566;
+  color: #2fd566;
 }
 
 .Sidebar::-webkit-scrollbar {
@@ -54,7 +54,7 @@
 }
 
 .Sidebar::-webkit-scrollbar-thumb {
-  background: #888; 
+  background: #888;
   border-radius: 10px;
 }
 

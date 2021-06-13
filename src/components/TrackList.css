@@ -15,7 +15,7 @@
   padding-bottom: 10px;
   padding-top: 10px;
   font-weight: 400;
-  color: #BBB;
+  color: #bbb;
   font-size: 13px;
   letter-spacing: 0.1em;
 }
@@ -38,10 +38,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-top: solid 1px #D8D8D8;
+  border-top: solid 1px #d8d8d8;
   border-collapse: collapse;
 }
 
 .Tracklist_Popularity {
-  color: #BBB;
+  color: #bbb;
 }

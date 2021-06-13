@@ -1,24 +1,23 @@
-import React, { Component } from 'react';
-import { instanceOf } from 'prop-types';
-import { withCookies, Cookies } from 'react-cookie';
-import AllTracks from '../../components/AllTracks'
-import Header from '../../components/Header.jsx';
-import { getUserProfile } from '../../api/spotify'
-import './Home.css';
+import React, { Component } from "react";
+import { instanceOf } from "prop-types";
+import { withCookies, Cookies } from "react-cookie";
+import AllTracks from "../../components/AllTracks";
+import Header from "../../components/Header.jsx";
+import { getUserProfile } from "../../api/spotify";
+import "./Home.css";
 
 class Home extends Component {
-
   constructor(props) {
     super(props);
 
     this.state = {
-      access_token: this.props.cookies.get('access_token') || '',
+      access_token: this.props.cookies.get("access_token") || "",
       user: {
-        display_name: '',
+        display_name: "",
         images: [
           {
-            url: '',
-          }
+            url: "",
+          },
         ],
       },
     };
@@ -26,13 +25,13 @@ class Home extends Component {
 
   async componentDidMount() {
     if (!this.state.access_token) {
-      this.props.history.push("/")
+      this.props.history.push("/");
     } else {
-      const user = await getUserProfile(this.state.access_token)
+      const user = await getUserProfile(this.state.access_token);
       if (user) {
         this.setState({ user });
       } else {
-        await this.logout()
+        await this.logout();
       }
     }
   }
@@ -43,17 +42,17 @@ class Home extends Component {
    * 3. Navigates to the homepage
    */
   async logout() {
-    await this.props.cookies.remove('access_token');
-    this.setState({ access_token: '' }, () => { this.props.history.push("/") });
+    await this.props.cookies.remove("access_token");
+    this.setState({ access_token: "" }, () => {
+      this.props.history.push("/");
+    });
   }
 
   render() {
     return (
       <div className="Home">
         <Header user={this.state.user} logout={this.logout.bind(this)}></Header>
-        <AllTracks
-          access_token={this.state.access_token}
-        />
+        <AllTracks access_token={this.state.access_token} />
       </div>
     );
   }

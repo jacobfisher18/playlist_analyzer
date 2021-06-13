@@ -1,6 +1,6 @@
 module.exports = {
-    "extends": "standard",
-    "rules": {
-        "playlist_menu_tabs": 0,
-    }
+  extends: "standard",
+  rules: {
+    playlist_menu_tabs: 0,
+  },
 };

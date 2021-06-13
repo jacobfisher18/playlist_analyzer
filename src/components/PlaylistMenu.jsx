@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
-import { playlist_menu_tabs } from '../utilities/constants';
-import './PlaylistMenu.css';
+import React, { Component } from "react";
+import { playlist_menu_tabs } from "../utilities/constants";
+import "./PlaylistMenu.css";
 
 class PlaylistMenu extends Component {
   renderTabs() {
     const { activeTab, selectTab } = this.props;
 
-    return playlist_menu_tabs.map(tab => (
+    return playlist_menu_tabs.map((tab) => (
       <li
-        className={activeTab === tab ? 'PlaylistMenu_Active_Tab' : ''}
+        className={activeTab === tab ? "PlaylistMenu_Active_Tab" : ""}
         onClick={() => selectTab(tab)}
         key={tab}
       >
@@ -20,9 +20,7 @@ class PlaylistMenu extends Component {
   render() {
     return (
       <div className="PlaylistMenu">
-        <ul>
-          {this.renderTabs()}
-        </ul>
+        <ul>{this.renderTabs()}</ul>
       </div>
     );
   }
