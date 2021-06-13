@@ -1,14 +1,14 @@
 {
-  "main.css": "/playlist_analyzer/static/css/main.30af0a19.chunk.css",
-  "main.js": "/playlist_analyzer/static/js/main.2db1ef82.chunk.js",
-  "main.js.map": "/playlist_analyzer/static/js/main.2db1ef82.chunk.js.map",
-  "static/js/1.f4ca31d3.chunk.js": "/playlist_analyzer/static/js/1.f4ca31d3.chunk.js",
-  "static/js/1.f4ca31d3.chunk.js.map": "/playlist_analyzer/static/js/1.f4ca31d3.chunk.js.map",
+  "main.css": "/playlist_analyzer/static/css/main.597b6d20.chunk.css",
+  "main.js": "/playlist_analyzer/static/js/main.3789054b.chunk.js",
+  "main.js.map": "/playlist_analyzer/static/js/main.3789054b.chunk.js.map",
+  "static/js/1.efe8e6ae.chunk.js": "/playlist_analyzer/static/js/1.efe8e6ae.chunk.js",
+  "static/js/1.efe8e6ae.chunk.js.map": "/playlist_analyzer/static/js/1.efe8e6ae.chunk.js.map",
   "runtime~main.js": "/playlist_analyzer/static/js/runtime~main.826880d6.js",
   "runtime~main.js.map": "/playlist_analyzer/static/js/runtime~main.826880d6.js.map",
   "static/media/spinner.gif": "/playlist_analyzer/static/media/spinner.8b9a5cd1.gif",
-  "static/css/main.30af0a19.chunk.css.map": "/playlist_analyzer/static/css/main.30af0a19.chunk.css.map",
+  "static/css/main.597b6d20.chunk.css.map": "/playlist_analyzer/static/css/main.597b6d20.chunk.css.map",
   "index.html": "/playlist_analyzer/index.html",
-  "precache-manifest.6d82245553e9440afd03cf24e5596c29.js": "/playlist_analyzer/precache-manifest.6d82245553e9440afd03cf24e5596c29.js",
+  "precache-manifest.9c475fbdc1ccf229752873e5651bbb5d.js": "/playlist_analyzer/precache-manifest.9c475fbdc1ccf229752873e5651bbb5d.js",
   "service-worker.js": "/playlist_analyzer/service-worker.js"
 }
