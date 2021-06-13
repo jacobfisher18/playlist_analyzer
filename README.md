@@ -16,6 +16,6 @@ which will run the app on localhost:3000.
 
 In the project directory, run:
 
-`yarn run deploy`
+`yarn deploy`
 
 which will build the app and then publish it with gh-pages.
