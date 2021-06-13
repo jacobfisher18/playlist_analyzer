@@ -1,3 +1,5 @@
+import { sleep } from "../utilities/time";
+
 const MAX_PLAYLISTS_PER_REQUEST = 50;
 
 const GET_USER_PROFILE_URL = "https://api.spotify.com/v1/me";
@@ -21,6 +23,19 @@ const spotifyGetRequest = async (spotifyURL, accessToken) => {
   });
   if (response.status === 200) {
     return response.json();
+  } else if (response.status === 429) {
+    const retryAfterSeconds = response.headers.get("retry-after");
+    if (!retryAfterSeconds) {
+      throw new Error(`Rate limited but could not get retry-after value`);
+    }
+    if (retryAfterSeconds > 10) {
+      throw new Error(
+        `Rate limited with a long retry-after of ${retryAfterSeconds} seconds, not retrying`
+      );
+    }
+    console.log(`Rate limited, retrying in ${retryAfterSeconds} seconds`);
+    await sleep(retryAfterSeconds * 1000);
+    return await spotifyGetRequest(spotifyURL, accessToken);
   } else {
     throw new Error(`Recieved ${response.status} when fetching`);
   }
@@ -58,6 +73,9 @@ export const getAllUserPlaylists = async (accessToken) => {
       } else {
         more = false;
       }
+
+      // Sleep a bit to try to avoid getting rate limited
+      await sleep(250);
     }
     return playlists;
   } catch (err) {
@@ -86,9 +104,7 @@ export const getAllTracksForManyPlaylists = async (accessToken, playlists) => {
   // Since we're using parallel arrays we need to make sure they're in sync
   const noNulls = promiseResults.every((item) => item !== null);
   if (promiseResults.length !== playlistNames.length || !noNulls) {
-    console.error(
-      "Error fetching all tracks in all playlists; further investigation needed"
-    );
+    console.error("Error fetching all tracks in all playlists");
     return null;
   }
 

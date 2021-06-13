@@ -163,7 +163,11 @@ class AllTracks extends Component {
         <p className="PlaylistHeader_Subtitle">
           <span className="Bold">{this.numTracks()}</span> total tracks •{" "}
           <span className="Bold">{this.state.filteredTracks.length}</span>{" "}
-          filtered tracks
+          filtered tracks •{" "}
+          <span className="Bold">
+            {Object.keys(this.state.playlistNameToTracksMap).length}
+          </span>{" "}
+          total playlists
         </p>
         <p className="PlaylistHeader_Subtitle"></p>
         <form
