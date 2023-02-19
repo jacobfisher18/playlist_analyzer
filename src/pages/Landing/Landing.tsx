@@ -4,6 +4,7 @@ import { instanceOf } from "prop-types";
 import { withCookies, Cookies } from "react-cookie";
 import { authWithSpotify } from "../../api/auth";
 import { Button, Title, Container, Space, Text } from "@mantine/core";
+import { COLORS } from "../../styles/colors";
 
 export const Landing = (props: {
   location: any;
@@ -42,7 +43,7 @@ export const Landing = (props: {
           boxShadow: "4px 4px 4px rgba(0,0,0,0.08)",
         }}
       >
-        <Title order={3} color="#2dc760">
+        <Title order={3} color={COLORS.primary}>
           Spotify
         </Title>
         <Space h="xs" />
@@ -57,7 +58,7 @@ export const Landing = (props: {
         <Button
           onClick={() => authWithSpotify()}
           style={{
-            backgroundColor: "#2dc760",
+            backgroundColor: COLORS.primary,
             borderRadius: 100,
             borderWidth: 0,
           }}
