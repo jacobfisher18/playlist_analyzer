@@ -11,13 +11,13 @@ import {
 } from "@mantine/core";
 
 interface Props {
-  access_token: string;
+  accessToken: string;
 }
 
 const AllTracks = (props: Props): JSX.Element => {
   const [filteredTracks, setFilteredTracks] = useState<Array<Track>>([]);
   const [searchText, setSearchText] = useState("");
-  const { allTracks, loading, error } = useTracks(props.access_token);
+  const { allTracks, loading, error } = useTracks(props.accessToken);
 
   const applyFilter = () => {
     let filteredTracks = [];
