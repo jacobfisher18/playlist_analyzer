@@ -4,15 +4,16 @@ const MAX_PLAYLISTS_PER_REQUEST = 50;
 
 const GET_USER_PROFILE_URL = "https://api.spotify.com/v1/me";
 const GET_ALL_USER_PLAYLISTS_URL = `https://api.spotify.com/v1/me/playlists?&limit=${MAX_PLAYLISTS_PER_REQUEST}`;
-const GET_PLAYLIST_TRACKS_URL = (playlistId) =>
+const GET_PLAYLIST_TRACKS_URL = (playlistId: string) =>
   `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
 
 /**
  * A generic request to the Spotify API; all fetches should use this
- * @param {string} spotifyURL
- * @param {string} accessToken
  */
-const spotifyGetRequest = async (spotifyURL, accessToken) => {
+const spotifyGetRequest = async (
+  spotifyURL: string,
+  accessToken: string
+): Promise<any> => {
   const response = await fetch(spotifyURL, {
     method: "GET",
     headers: {
@@ -24,10 +25,11 @@ const spotifyGetRequest = async (spotifyURL, accessToken) => {
   if (response.status === 200) {
     return response.json();
   } else if (response.status === 429) {
-    const retryAfterSeconds = response.headers.get("retry-after");
-    if (!retryAfterSeconds) {
+    const retryAfterHeader = response.headers.get("retry-after");
+    if (!retryAfterHeader) {
       throw new Error(`Rate limited but could not get retry-after value`);
     }
+    const retryAfterSeconds = parseInt(retryAfterHeader);
     if (retryAfterSeconds > 10) {
       throw new Error(
         `Rate limited with a long retry-after of ${retryAfterSeconds} seconds, not retrying`
@@ -43,9 +45,8 @@ const spotifyGetRequest = async (spotifyURL, accessToken) => {
 
 /**
  * Gets the current user profile, or null if it fails
- * @param {string} accessToken
  */
-export const getUserProfile = async (accessToken) => {
+export const getUserProfile = async (accessToken: string) => {
   try {
     const user = await spotifyGetRequest(GET_USER_PROFILE_URL, accessToken);
     return user;
@@ -57,9 +58,8 @@ export const getUserProfile = async (accessToken) => {
 
 /**
  * Get all playlists for the current user, or null if it fails
- * @param {string} accessToken
  */
-export const getAllUserPlaylists = async (accessToken) => {
+export const getAllUserPlaylists = async (accessToken: string) => {
   try {
     const playlists = [];
     let more = true;
@@ -87,10 +87,11 @@ export const getAllUserPlaylists = async (accessToken) => {
 /**
  * Get all the tracks for a given set of playlists. Returns a map from the playlist
  * name to the array of tracks. Returns null if any of the fetches fail.
- * @param {string} accessToken
- * @param {Spotify Playlist Array} playlists
  */
-export const getAllTracksForManyPlaylists = async (accessToken, playlists) => {
+export const getAllTracksForManyPlaylists = async (
+  accessToken: string,
+  playlists: Array<any>
+) => {
   // We'll use parallel arrays for these
   const promises = [];
   const playlistNames = [];
@@ -108,7 +109,7 @@ export const getAllTracksForManyPlaylists = async (accessToken, playlists) => {
     return null;
   }
 
-  const playlistNameToTracksMap = {};
+  const playlistNameToTracksMap: Record<string, any> = {};
   for (let i = 0; i < promiseResults.length; i++) {
     playlistNameToTracksMap[playlistNames[i]] = promiseResults[i];
   }
@@ -118,12 +119,10 @@ export const getAllTracksForManyPlaylists = async (accessToken, playlists) => {
 
 /**
  * Get all tracks in a given Spotify playlist. Returns null if it fails.
- * @param {string} accessToken
- * @param {string} playlistId
  */
 export const getAllTracksForSinglePlaylist = async (
-  accessToken,
-  playlistId
+  accessToken: string,
+  playlistId: string
 ) => {
   try {
     const tracks = [];

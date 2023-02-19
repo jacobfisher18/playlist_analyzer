@@ -156,10 +156,7 @@ class AllTracks extends Component {
       </div>
     ) : (
       <div className="AllTracks">
-        <p className="PlaylistHeader_Name">Spotify Playlist Analyzer</p>
-        <p className="PlaylistSubHeader_Name">
-          Search all tracks on all your playlists at once.
-        </p>
+        <p className="PlaylistHeader_Name">Spotify Search</p>
         <p className="PlaylistHeader_Subtitle">
           <span className="Bold">{this.numTracks()}</span> total tracks •{" "}
           <span className="Bold">{this.state.filteredTracks.length}</span>{" "}
