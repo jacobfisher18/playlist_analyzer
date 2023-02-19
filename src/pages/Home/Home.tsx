@@ -4,19 +4,13 @@ import { withCookies, Cookies } from "react-cookie";
 import AllTracks from "../../components/AllTracks";
 import Header from "../../components/Header";
 import { getUserProfile } from "../../api/spotify";
+import { SpotifyUser } from "../../types/user";
 
 const Home = (props: { cookies: any; history: any }): JSX.Element => {
   const [accessToken, setAccessToken] = useState(
     props.cookies.get("access_token") || ""
   );
-  const [user, setUser] = useState({
-    display_name: "",
-    images: [
-      {
-        url: "",
-      },
-    ],
-  });
+  const [user, setUser] = useState<SpotifyUser | null>(null);
 
   useEffect(() => {
     const init = async () => {
