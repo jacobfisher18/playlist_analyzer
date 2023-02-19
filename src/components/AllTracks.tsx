@@ -1,7 +1,14 @@
 import React, { useState } from "react";
-import spinner from "../assets/spinner.gif";
-import "./AllTracks.css";
 import { Track, useTracks } from "../hooks/useTracks";
+import {
+  Title,
+  TextInput,
+  Table,
+  Loader,
+  Center,
+  Container,
+  Space,
+} from "@mantine/core";
 
 interface Props {
   access_token: string;
@@ -45,15 +52,11 @@ const AllTracks = (props: Props): JSX.Element => {
 
     return filteredTracks.slice(0, maxSize).map((track) => {
       return (
-        <tr key={`${track.playlistName}-${track.id}`} className="TrackList_Row">
-          <td className="Tracklist_Playlist">{track.playlistName}</td>
-          <td className="Tracklist_Title">{track.name}</td>
-          <td className="Tracklist_Artist_Album Tracklist_Artist">
-            {track.artists.map((el: any) => el.name).join(", ")}
-          </td>
-          <td className="Tracklist_Artist_Album Tracklist_Album">
-            {track.album.name}
-          </td>
+        <tr key={`${track.playlistName}-${track.id}`}>
+          <td>{track.playlistName}</td>
+          <td>{track.name}</td>
+          <td>{track.artists.map((el: any) => el.name).join(", ")}</td>
+          <td>{track.album.name}</td>
         </tr>
       );
     });
@@ -65,52 +68,48 @@ const AllTracks = (props: Props): JSX.Element => {
 
   if (loading) {
     return (
-      <div className="centered">
-        <img src={spinner} className="Spinner" alt="loading..." />
-      </div>
+      <Center>
+        <Loader variant="bars" />
+      </Center>
     );
   }
 
   return (
-    <div className="AllTracks">
-      <p className="PlaylistHeader_Name">Spotify Search</p>
-      <p className="PlaylistHeader_Subtitle">
-        <span className="Bold">{allTracks.length}</span> total tracks •{" "}
-        <span className="Bold">{filteredTracks.length}</span> filtered tracks •{" "}
-      </p>
-      <p className="PlaylistHeader_Subtitle"></p>
+    <Container p="sm">
+      <Title order={1}>Spotify Search</Title>
+      <Space h="sm" />
+      <Title order={5}>
+        {allTracks.length} total tracks • {filteredTracks.length} filtered
+        tracks
+      </Title>
+      <Space h="sm" />
       <form
         onSubmit={(e) => {
           e.preventDefault();
           applyFilter();
         }}
       >
-        <input
-          className="SearchBar"
+        <TextInput
           placeholder="Search a track name, artist, or album..."
-          type="text"
-          onChange={(e) => setSearchText(e.target.value)}
           value={searchText}
+          onChange={(event) => setSearchText(event.currentTarget.value)}
         />
       </form>
+      <Space h="sm" />
       <div>
-        <table className="AllTracks_TrackList">
-          <tbody>
+        <Table>
+          <thead>
             <tr>
-              <th className="TrackList_HeaderCell">PLAYLIST</th>
-              <th className="TrackList_HeaderCell">TITLE</th>
-              <th className="TrackList_HeaderCell TrackList_HeaderCell_Artist">
-                ARTIST
-              </th>
-              <th className="TrackList_HeaderCell TrackList_HeaderCell_Album">
-                ALBUM
-              </th>
+              <th>PLAYLIST</th>
+              <th>TITLE</th>
+              <th>ARTIST</th>
+              <th>ALBUM</th>
             </tr>
-            {renderFilteredTracks()}
-          </tbody>
-        </table>
+          </thead>
+          <tbody>{renderFilteredTracks()}</tbody>
+        </Table>
       </div>
-    </div>
+    </Container>
   );
 };
 

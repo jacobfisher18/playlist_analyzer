@@ -1,8 +1,6 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
 ## Playlist Analyzer
 
-This project is meant to provide additional functionality regarding interacting with Spotify playlists. It's still a work in progress.
+This project allows users to search among all their tracks in all of their Spotify playlists.
 
 ### Running Locally
 

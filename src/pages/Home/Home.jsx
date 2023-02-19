@@ -2,9 +2,8 @@ import React, { Component } from "react";
 import { instanceOf } from "prop-types";
 import { withCookies, Cookies } from "react-cookie";
 import AllTracks from "../../components/AllTracks";
-import Header from "../../components/Header.jsx";
+import Header from "../../components/Header";
 import { getUserProfile } from "../../api/spotify";
-import "./Home.css";
 
 class Home extends Component {
   constructor(props) {
@@ -50,10 +49,10 @@ class Home extends Component {
 
   render() {
     return (
-      <div className="Home">
+      <>
         <Header user={this.state.user} logout={this.logout.bind(this)}></Header>
         <AllTracks access_token={this.state.access_token} />
-      </div>
+      </>
     );
   }
 }

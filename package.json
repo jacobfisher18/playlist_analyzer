@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.10.6",
+    "@mantine/core": "^5.10.4",
+    "@mantine/hooks": "^5.10.4",
     "gh-pages": "^2.0.1",
     "prop-types": "^15.7.2",
     "query-string": "^6.2.0",
