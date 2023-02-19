@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { Track, useTracks } from "../hooks/useTracks";
 import {
   Title,
   TextInput,
   Table,
   Loader,
-  Center,
   Container,
   Space,
+  Text,
 } from "@mantine/core";
 
 interface Props {
@@ -18,6 +18,10 @@ const AllTracks = (props: Props): JSX.Element => {
   const [filteredTracks, setFilteredTracks] = useState<Array<Track>>([]);
   const [searchText, setSearchText] = useState("");
   const { allTracks, loading, error } = useTracks(props.accessToken);
+
+  useEffect(() => {
+    applyFilter();
+  }, [allTracks]);
 
   const applyFilter = () => {
     let filteredTracks = [];
@@ -63,25 +67,12 @@ const AllTracks = (props: Props): JSX.Element => {
   };
 
   if (error) {
-    return <p>ERROR</p>;
-  }
-
-  if (loading) {
-    return (
-      <Center>
-        <Loader variant="bars" />
-      </Center>
-    );
+    return <Text>There was an error retrieving tracks from Spotify.</Text>;
   }
 
   return (
     <Container p="sm">
       <Title order={1}>Spotify Search</Title>
-      <Space h="sm" />
-      <Title order={5}>
-        {allTracks.length} total tracks • {filteredTracks.length} filtered
-        tracks
-      </Title>
       <Space h="sm" />
       <form
         onSubmit={(e) => {
@@ -90,25 +81,49 @@ const AllTracks = (props: Props): JSX.Element => {
         }}
       >
         <TextInput
+          disabled={loading}
           placeholder="Search a track name, artist, or album..."
           value={searchText}
           onChange={(event) => setSearchText(event.currentTarget.value)}
         />
       </form>
-      <Space h="sm" />
-      <div>
-        <Table>
-          <thead>
-            <tr>
-              <th>PLAYLIST</th>
-              <th>TITLE</th>
-              <th>ARTIST</th>
-              <th>ALBUM</th>
-            </tr>
-          </thead>
-          <tbody>{renderFilteredTracks()}</tbody>
-        </Table>
-      </div>
+      <Space h="xl" />
+
+      {loading ? (
+        <Container
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            paddingTop: 100,
+          }}
+        >
+          <Loader variant="bars" />
+          <Space h="sm" />
+          <Title order={5}>Loading tracks from Spotify</Title>
+        </Container>
+      ) : (
+        <>
+          <Title order={5}>
+            {allTracks.length} total tracks • {filteredTracks.length} filtered
+            tracks
+          </Title>
+          <Space h="sm" />
+          <div>
+            <Table>
+              <thead>
+                <tr>
+                  <th>Playlist</th>
+                  <th>Title</th>
+                  <th>Artist</th>
+                  <th>Album</th>
+                </tr>
+              </thead>
+              <tbody>{renderFilteredTracks()}</tbody>
+            </Table>
+          </div>
+        </>
+      )}
     </Container>
   );
 };

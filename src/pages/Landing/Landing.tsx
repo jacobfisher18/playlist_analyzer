@@ -46,7 +46,7 @@ export const Landing = (props: {
           Spotify
         </Title>
         <Space h="xs" />
-        <Title order={1} color="gray">
+        <Title order={1} color="#555555">
           Playlist Search
         </Title>
         <Space h="lg" />
