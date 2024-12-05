@@ -1,4 +1,5 @@
 import { sleep } from "../utilities/time";
+import { chunk } from "lodash";
 
 const MAX_PLAYLISTS_PER_REQUEST = 50;
 
@@ -92,26 +93,24 @@ export const getAllTracksForManyPlaylists = async (
   accessToken: string,
   playlists: Array<any>
 ) => {
-  // We'll use parallel arrays for these
-  const promises = [];
-  const playlistNames = [];
-  for (const playlist of playlists) {
-    promises.push(getAllTracksForSinglePlaylist(accessToken, playlist.id));
-    playlistNames.push(playlist.name);
-  }
-
-  const promiseResults = await Promise.all(promises);
-
-  // Since we're using parallel arrays we need to make sure they're in sync
-  const noNulls = promiseResults.every((item) => item !== null);
-  if (promiseResults.length !== playlistNames.length || !noNulls) {
-    console.error("Error fetching all tracks in all playlists");
-    return null;
-  }
-
   const playlistNameToTracksMap: Record<string, any> = {};
-  for (let i = 0; i < promiseResults.length; i++) {
-    playlistNameToTracksMap[playlistNames[i]] = promiseResults[i];
+
+  const chunks = chunk(playlists, 10);
+
+  for (const chunk of chunks) {
+    await Promise.all(
+      chunk.map(async (playlist) => {
+        const result = await getAllTracksForSinglePlaylist(
+          accessToken,
+          playlist.id
+        );
+        if (!result) {
+          console.error("Error fetching all tracks in all playlists");
+          return;
+        }
+        playlistNameToTracksMap[playlist.name] = result;
+      })
+    );
   }
 
   return playlistNameToTracksMap;
@@ -120,7 +119,7 @@ export const getAllTracksForManyPlaylists = async (
 /**
  * Get all tracks in a given Spotify playlist. Returns null if it fails.
  */
-export const getAllTracksForSinglePlaylist = async (
+const getAllTracksForSinglePlaylist = async (
   accessToken: string,
   playlistId: string
 ) => {
