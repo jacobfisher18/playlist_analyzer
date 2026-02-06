@@ -21,6 +21,8 @@ interface PlayerContextValue {
   error: string | null;
   playTrack: (trackUri: string) => Promise<void>;
   togglePlayPause: () => Promise<void>;
+  /** Pause playback (e.g. on logout). No-op if not connected or not playing. */
+  pause: () => Promise<void>;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -136,12 +138,24 @@ export function PlayerProvider({
     }
   }, [accessToken, ensureDeviceId, isPlaying, currentTrackUri]);
 
+  const pause = useCallback(async () => {
+    if (!accessToken || !deviceId) return;
+    try {
+      await pausePlayback(accessToken, deviceId);
+      setIsPlaying(false);
+      justPausedRef.current = true;
+    } catch {
+      // Ignore errors (e.g. already stopped or token invalid)
+    }
+  }, [accessToken, deviceId]);
+
   const value: PlayerContextValue = {
     isPlaying,
     loading,
     error,
     playTrack,
     togglePlayPause,
+    pause,
   };
 
   return (
