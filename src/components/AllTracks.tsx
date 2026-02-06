@@ -184,7 +184,7 @@ const AllTracks = (props: Props): JSX.Element => {
               styles={{
                 input: {
                   borderRadius: 12,
-                  maxWidth: hasQuery ? "100%" : 480,
+                  width: hasQuery ? "100%" : "500px",
                 },
               }}
             />
