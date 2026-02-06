@@ -9,15 +9,22 @@ import {
   Space,
   Text,
 } from "@mantine/core";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 interface Props {
   accessToken: string;
+  spotifyUserId: string | null;
+  supabase: SupabaseClient | null;
 }
 
 const AllTracks = (props: Props): JSX.Element => {
   const [filteredTracks, setFilteredTracks] = useState<Array<Track>>([]);
   const [searchText, setSearchText] = useState("");
-  const { allTracks, loading, error } = useTracks(props.accessToken);
+  const { allTracks, loading, error, isSyncing } = useTracks(
+    props.accessToken,
+    props.spotifyUserId,
+    props.supabase
+  );
 
   useEffect(() => {
     applyFilter();
@@ -72,6 +79,15 @@ const AllTracks = (props: Props): JSX.Element => {
 
   return (
     <Container p="sm">
+      {isSyncing && (
+        <>
+          <Loader size="sm" />
+          <Text size="sm" c="dimmed" mb="xs">
+            Syncing with Spotify…
+          </Text>
+          <Space h="sm" />
+        </>
+      )}
       <Title order={1}>Spotify Search</Title>
       <Space h="sm" />
       <form

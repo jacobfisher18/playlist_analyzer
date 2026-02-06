@@ -119,7 +119,7 @@ export const getAllTracksForManyPlaylists = async (
 /**
  * Get all tracks in a given Spotify playlist. Returns null if it fails.
  */
-const getAllTracksForSinglePlaylist = async (
+export const getAllTracksForSinglePlaylist = async (
   accessToken: string,
   playlistId: string
 ) => {

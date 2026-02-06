@@ -5,6 +5,7 @@ import AllTracks from "../../components/AllTracks";
 import Header from "../../components/Header";
 import { getUserProfile } from "../../api/spotify";
 import { SpotifyUser } from "../../types/user";
+import { supabase } from "../../api/supabase";
 
 const Home = (): JSX.Element => {
   const [accessToken, , removeAccessToken] = useAccessToken();
@@ -35,7 +36,11 @@ const Home = (): JSX.Element => {
   return (
     <>
       <Header user={user} logout={logout} />
-      <AllTracks accessToken={accessToken ?? ""} />
+      <AllTracks
+        accessToken={accessToken ?? ""}
+        spotifyUserId={user?.id ?? null}
+        supabase={supabase}
+      />
     </>
   );
 };
