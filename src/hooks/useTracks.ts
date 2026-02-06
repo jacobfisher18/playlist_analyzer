@@ -20,7 +20,7 @@ export interface Track {
 }
 
 function buildTracksFromMap(
-  playlistNameToTracksMap: Record<string, unknown[]>
+  playlistNameToTracksMap: Record<string, unknown[]>,
 ): Track[] {
   const newAllTracks: Track[] = [];
   // Ensure deterministic ordering across cache and live sync by:
@@ -32,8 +32,16 @@ function buildTracksFromMap(
 
   for (const [playlistName, tracks] of sortedEntries) {
     for (const trackObj of tracks as Array<{ track?: unknown }>) {
-      const track = trackObj?.track as { id?: string; name?: string; artists?: unknown[]; album?: { name: string } } | undefined;
-      if (!track?.name || !track?.artists || !track?.album || !track?.id) continue;
+      const track = trackObj?.track as
+        | {
+            id?: string;
+            name?: string;
+            artists?: unknown[];
+            album?: { name: string };
+          }
+        | undefined;
+      if (!track?.name || !track?.artists || !track?.album || !track?.id)
+        continue;
       newAllTracks.push({
         id: track.id,
         name: track.name,
@@ -49,7 +57,7 @@ function buildTracksFromMap(
 export const useTracks = (
   spotifyAccessToken: string,
   spotifyUserId: string | null,
-  supabase: SupabaseClient | null
+  supabase: SupabaseClient | null,
 ) => {
   const [allTracks, setAllTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,13 +74,16 @@ export const useTracks = (
       // 1) Hydrate from cache immediately so we can render the table right away
       let hadCache = false;
       if (supabase) {
-        const cachedPlaylists = await getCachedPlaylists(supabase, spotifyUserId);
+        const cachedPlaylists = await getCachedPlaylists(
+          supabase,
+          spotifyUserId,
+        );
         if (cachedPlaylists?.length && !cancelled) {
           const playlistIds = cachedPlaylists.map((p) => p.id);
           const cachedTracksMap = await getCachedTracksForPlaylists(
             supabase,
             spotifyUserId,
-            playlistIds
+            playlistIds,
           );
           const playlistNameToTracks: Record<string, unknown[]> = {};
           for (const p of cachedPlaylists) {
@@ -107,7 +118,7 @@ export const useTracks = (
           ? await getCachedTracksForPlaylists(
               supabase,
               spotifyUserId,
-              playlists.map((p: { id: string }) => p.id)
+              playlists.map((p: { id: string }) => p.id),
             )
           : null;
 
@@ -120,7 +131,7 @@ export const useTracks = (
         } else {
           const items = await getAllTracksForSinglePlaylist(
             spotifyAccessToken,
-            playlist.id
+            playlist.id,
           );
           if (cancelled) return;
           if (items === null) {
@@ -136,7 +147,7 @@ export const useTracks = (
               spotifyUserId,
               playlist.id,
               snapshotId,
-              items
+              items,
             );
           }
         }
@@ -145,7 +156,7 @@ export const useTracks = (
       if (cancelled) return;
       if (
         Object.values(playlistNameToTracksMap).every(
-          (items) => !items?.length || items.length === 0
+          (items) => !items?.length || items.length === 0,
         )
       ) {
         setError(true);
