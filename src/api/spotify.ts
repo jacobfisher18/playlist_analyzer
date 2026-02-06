@@ -1,5 +1,5 @@
 import { sleep } from "../utilities/time";
-import { chunk } from "lodash";
+import { chunk } from "../utilities/array";
 
 const MAX_PLAYLISTS_PER_REQUEST = 50;
 
