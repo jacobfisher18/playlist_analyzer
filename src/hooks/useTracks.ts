@@ -23,7 +23,14 @@ function buildTracksFromMap(
   playlistNameToTracksMap: Record<string, unknown[]>
 ): Track[] {
   const newAllTracks: Track[] = [];
-  for (const [playlistName, tracks] of Object.entries(playlistNameToTracksMap)) {
+  // Ensure deterministic ordering across cache and live sync by:
+  // 1) Sorting playlists alphabetically by name
+  // 2) Preserving the original order of tracks within each playlist array
+  const sortedEntries = Object.entries(playlistNameToTracksMap).sort(
+    ([aName], [bName]) => aName.localeCompare(bName),
+  );
+
+  for (const [playlistName, tracks] of sortedEntries) {
     for (const trackObj of tracks as Array<{ track?: unknown }>) {
       const track = trackObj?.track as { id?: string; name?: string; artists?: unknown[]; album?: { name: string } } | undefined;
       if (!track?.name || !track?.artists || !track?.album || !track?.id) continue;
