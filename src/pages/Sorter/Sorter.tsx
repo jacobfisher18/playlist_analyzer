@@ -10,6 +10,7 @@ import {
   Paper,
   Button,
   Divider,
+  Modal,
 } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
 import { getCachedPlaylists, getCachedTracksForPlaylists } from "../../api/spotifyCache";
@@ -138,6 +139,10 @@ export default function Sorter({
   >([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [moveLoading, setMoveLoading] = useState<string | null>(null);
+  const [moveConfirmTarget, setMoveConfirmTarget] = useState<{
+    playlistId: string;
+    playlistName: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!supabase || !spotifyUserId) {
@@ -390,6 +395,43 @@ export default function Sorter({
           .sorter-cover-button:hover .sorter-play-overlay { opacity: 1 !important; }
         `}</style>
 
+        <Modal
+          opened={moveConfirmTarget != null}
+          onClose={() => setMoveConfirmTarget(null)}
+          title="Move track?"
+          centered
+        >
+          {moveConfirmTarget && (
+            <Stack spacing="md">
+              <Text size="sm" c="dimmed">
+                Move <Text component="span" fw={600} c="dark.0">{currentTrack.name}</Text> from{" "}
+                <Text component="span" fw={500}>{selectedPlaylist.name}</Text> to{" "}
+                <Text component="span" fw={500}>{moveConfirmTarget.playlistName}</Text>?
+              </Text>
+              <Group position="right" spacing="xs">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setMoveConfirmTarget(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  color="green"
+                  loading={moveLoading === moveConfirmTarget.playlistId}
+                  onClick={async () => {
+                    await handleMoveToPlaylist(moveConfirmTarget.playlistId);
+                    setMoveConfirmTarget(null);
+                  }}
+                >
+                  Confirm
+                </Button>
+              </Group>
+            </Stack>
+          )}
+        </Modal>
+
         <Text
           size="sm"
           fw={500}
@@ -428,7 +470,12 @@ export default function Sorter({
                       variant="light"
                       color="green"
                       loading={moveLoading === rec.id}
-                      onClick={() => handleMoveToPlaylist(rec.id!)}
+                      onClick={() =>
+                        setMoveConfirmTarget({
+                          playlistId: rec.id!,
+                          playlistName: rec.playlistName,
+                        })
+                      }
                     >
                       Move here
                     </Button>
