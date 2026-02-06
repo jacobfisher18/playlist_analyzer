@@ -19,12 +19,19 @@ interface Props {
   allTracks: Track[];
   loading: boolean;
   error: boolean;
+  searchText: string;
+  onSearchTextChange: (value: string) => void;
 }
 
 const AllTracks = (props: Props): JSX.Element => {
   const [filteredTracks, setFilteredTracks] = useState<Array<Track>>([]);
-  const [searchText, setSearchText] = useState("");
-  const { allTracks, loading, error } = props;
+  const {
+    allTracks,
+    loading,
+    error,
+    searchText,
+    onSearchTextChange: setSearchText,
+  } = props;
 
   const hasQuery = searchText.trim() !== "";
 
@@ -130,63 +137,63 @@ const AllTracks = (props: Props): JSX.Element => {
   );
 
   return (
-    <Flex
-      direction="column"
-      align="center"
-      justify="flex-start"
-      style={{ minHeight: "calc(100vh - 60px)", padding: 16 }}
+    <Box
+      style={{
+        minHeight: "100vh",
+        padding: 24,
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: hasQuery ? "stretch" : "center",
+        justifyContent: hasQuery ? "flex-start" : "center",
+      }}
     >
-      <Container
-        p="sm"
-        style={{
-          width: "100%",
-          maxWidth: hasQuery ? 900 : 520,
-        }}
-      >
-        {loading && !hasQuery ? (
-          <Flex direction="column" align="center" gap="md" mt="xl">
-            <Loader variant="bars" />
-            <Text size="sm" c="dimmed">
-              Loading tracks from Spotify
-            </Text>
-          </Flex>
-        ) : (
-          <>
-            {!hasQuery && (
-              <Title order={2} align="center" mt="md" mb="xl">
-                Search across all your playlists
-              </Title>
-            )}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                applyFilter();
+      {loading && !hasQuery ? (
+        <Flex direction="column" align="center" gap="md">
+          <Loader variant="bars" />
+          <Text size="sm" c="dimmed">
+            Loading tracks from Spotify
+          </Text>
+        </Flex>
+      ) : (
+        <Box
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: hasQuery ? "stretch" : "center",
+            width: "100%",
+          }}
+        >
+          {!hasQuery && (
+            <Title order={2} mb="xl">
+              Search across all your playlists
+            </Title>
+          )}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              applyFilter();
+            }}
+          >
+            <TextInput
+              size="md"
+              disabled={loading}
+              placeholder="Search a track name, artist, or album..."
+              value={searchText}
+              onChange={(event) => setSearchText(event.currentTarget.value)}
+              styles={{
+                input: {
+                  borderRadius: 12,
+                  maxWidth: hasQuery ? "100%" : 480,
+                },
               }}
-            >
-              <TextInput
-                size="md"
-                disabled={loading}
-                placeholder="Search a track name, artist, or album..."
-                value={searchText}
-                onChange={(event) => setSearchText(event.currentTarget.value)}
-                styles={
-                  hasQuery
-                    ? undefined
-                    : {
-                        input: {
-                          textAlign: "center",
-                          borderRadius: 12,
-                        },
-                      }
-                }
-              />
-            </form>
+            />
+          </form>
 
-            {hasQuery && <Box mt="lg">{resultsContent}</Box>}
-          </>
-        )}
-      </Container>
-    </Flex>
+          {hasQuery && <Box mt="lg">{resultsContent}</Box>}
+        </Box>
+      )}
+    </Box>
   );
 };
 

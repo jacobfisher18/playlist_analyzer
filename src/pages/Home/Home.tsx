@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { Box } from "@mantine/core";
+import { COLORS } from "../../styles/colors";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import { useNavigate } from "react-router-dom";
 import AllTracks from "../../components/AllTracks";
-import Header from "../../components/Header";
+import Sidebar from "../../components/Sidebar";
 import { getUserProfile } from "../../api/spotify";
 import { SpotifyUser } from "../../types/user";
 import { supabase } from "../../api/supabase";
@@ -14,6 +16,7 @@ const Home = (): JSX.Element => {
   const [accessToken, , removeAccessToken] = useAccessToken();
   const navigate = useNavigate();
   const [user, setUser] = useState<SpotifyUser | null>(null);
+  const [searchText, setSearchText] = useState("");
   const [spotifyUserId, setSpotifyUserId] = useState<string | null>(() =>
     typeof window !== "undefined"
       ? localStorage.getItem(SPOTIFY_USER_ID_KEY)
@@ -50,10 +53,29 @@ const Home = (): JSX.Element => {
   }, [accessToken]);
 
   return (
-    <>
-      <Header user={user} logout={logout} isSyncing={isSyncing} />
-      <AllTracks allTracks={allTracks} loading={loading} error={error} />
-    </>
+    <Box style={{ display: "flex", width: "100%", minHeight: "100vh" }}>
+      <Sidebar
+        user={user}
+        isSyncing={isSyncing}
+        onLogout={logout}
+        onLogoClick={() => setSearchText("")}
+      />
+      <Box
+        style={{
+          flex: 1,
+          minWidth: 0,
+          backgroundColor: COLORS.mainBg,
+        }}
+      >
+        <AllTracks
+          allTracks={allTracks}
+          loading={loading}
+          error={error}
+          searchText={searchText}
+          onSearchTextChange={setSearchText}
+        />
+      </Box>
+    </Box>
   );
 };
 
