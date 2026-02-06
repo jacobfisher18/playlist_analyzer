@@ -56,7 +56,8 @@ export const useTracks = (
     const run = async () => {
       setError(false);
 
-      // 1) Try cache first
+      // 1) Hydrate from cache immediately so we can render the table right away
+      let hadCache = false;
       if (supabase) {
         const cachedPlaylists = await getCachedPlaylists(supabase, spotifyUserId);
         if (cachedPlaylists?.length && !cancelled) {
@@ -66,36 +67,30 @@ export const useTracks = (
             spotifyUserId,
             playlistIds
           );
-          if (cachedTracksMap?.size && !cancelled) {
-            const playlistNameToTracks: Record<string, unknown[]> = {};
-            let hasAnyTracks = false;
-            for (const p of cachedPlaylists) {
-              const entry = cachedTracksMap.get(p.id);
-              const items = entry?.items ?? [];
-              if (items.length) hasAnyTracks = true;
-              playlistNameToTracks[p.name] = items;
-            }
-            if (hasAnyTracks) {
-              setAllTracks(buildTracksFromMap(playlistNameToTracks));
-              setLoading(false);
-            }
+          const playlistNameToTracks: Record<string, unknown[]> = {};
+          for (const p of cachedPlaylists) {
+            const entry = cachedTracksMap?.get(p.id);
+            playlistNameToTracks[p.name] = entry?.items ?? [];
           }
+          setAllTracks(buildTracksFromMap(playlistNameToTracks));
+          setLoading(false);
+          hadCache = true;
         }
       }
 
-      // 2) Background refresh from Spotify
+      // 2) Kick off sync in the background: fetch playlists fresh, then fetch tracks per playlist when snapshot changed
       setIsSyncing(true);
       const playlists = await getAllUserPlaylists(spotifyAccessToken);
       if (cancelled) return;
       if (playlists === null) {
         setError(true);
-        setLoading(false);
+        if (!hadCache) setLoading(false);
         setIsSyncing(false);
         return;
       }
       if (!playlists.length) {
         setError(true);
-        setLoading(false);
+        if (!hadCache) setLoading(false);
         setIsSyncing(false);
         return;
       }
@@ -124,7 +119,7 @@ export const useTracks = (
           if (items === null) {
             setError(true);
             setIsSyncing(false);
-            setLoading(false);
+            if (!hadCache) setLoading(false);
             return;
           }
           playlistNameToTracksMap[playlist.name] = items;
@@ -147,7 +142,7 @@ export const useTracks = (
         )
       ) {
         setError(true);
-        setLoading(false);
+        if (!hadCache) setLoading(false);
         setIsSyncing(false);
         return;
       }
