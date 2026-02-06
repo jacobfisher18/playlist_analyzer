@@ -1,16 +1,22 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import queryString from "query-string";
 import { instanceOf } from "prop-types";
 import { withCookies, Cookies } from "react-cookie";
 import { authWithSpotify, exchangeCodeForToken } from "../../api/auth";
+import { supabase, supabaseInitError } from "../../api/supabase";
 import { Button, Title, Container, Space, Text } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
+
+export type SupabaseStatus = "idle" | "connecting" | "connected" | "error";
 
 export const Landing = (props: {
   location: any;
   cookies: any;
   history: any;
 }): JSX.Element => {
+  const [supabaseStatus, setSupabaseStatus] = useState<SupabaseStatus>("idle");
+  const [supabaseError, setSupabaseError] = useState<string | null>(null);
+
   useEffect(() => {
     const run = async () => {
       const query = queryString.parse(location.search);
@@ -27,6 +33,29 @@ export const Landing = (props: {
       }
     };
     run();
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) {
+      setSupabaseStatus("error");
+      setSupabaseError(supabaseInitError || "Supabase not available");
+      return;
+    }
+    setSupabaseStatus("connecting");
+    supabase
+      .from("connection_test")
+      .select("message")
+      .limit(1)
+      .single()
+      .then(({ data, error }) => {
+        if (error) {
+          setSupabaseStatus("error");
+          setSupabaseError(error.message);
+        } else {
+          setSupabaseStatus("connected");
+          setSupabaseError(null);
+        }
+      });
   }, []);
 
   return (
@@ -72,6 +101,14 @@ export const Landing = (props: {
         >
           Login with Spotify
         </Button>
+        <Space h="md" />
+        <Text size="sm" color="#888">
+          Supabase:{" "}
+          {supabaseStatus === "idle" && "-"}
+          {supabaseStatus === "connecting" && "connecting..."}
+          {supabaseStatus === "connected" && "connected"}
+          {supabaseStatus === "error" && "error: " + (supabaseError || "unknown")}
+        </Text>
       </Container>
     </div>
   );

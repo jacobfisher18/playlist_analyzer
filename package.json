@@ -6,6 +6,7 @@
     "@emotion/react": "^11.10.6",
     "@mantine/core": "^5.10.4",
     "@mantine/hooks": "^5.10.4",
+    "@supabase/supabase-js": "^2.95.2",
     "gh-pages": "^2.0.1",
     "lodash": "^4.17.21",
     "prop-types": "^15.7.2",
@@ -31,7 +32,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "db:push": "npx supabase db push",
+    "db:link": "npx supabase link --project-ref qlxgxyxutsmipkambjux"
   },
   "browserslist": [
     ">0.2%",
