@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { CookiesProvider } from "react-cookie";
 import Home from "./pages/Home/Home";
 import Landing from "./pages/Landing/Landing";
 import {
@@ -16,8 +15,7 @@ const App = (): JSX.Element => {
     setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
 
   return (
-    <CookiesProvider>
-      <ColorSchemeProvider
+    <ColorSchemeProvider
         colorScheme={colorScheme}
         toggleColorScheme={toggleColorScheme}
       >
@@ -51,7 +49,6 @@ const App = (): JSX.Element => {
           </Router>
         </MantineProvider>
       </ColorSchemeProvider>
-    </CookiesProvider>
   );
 };
 

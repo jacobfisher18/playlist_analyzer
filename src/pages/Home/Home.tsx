@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useCookies } from "react-cookie";
+import { useAccessToken } from "../../hooks/useAccessToken";
 import { useNavigate } from "react-router-dom";
 import AllTracks from "../../components/AllTracks";
 import Header from "../../components/Header";
@@ -7,14 +7,12 @@ import { getUserProfile } from "../../api/spotify";
 import { SpotifyUser } from "../../types/user";
 
 const Home = (): JSX.Element => {
-  const [cookies, , removeCookie] = useCookies(["access_token"]);
+  const [accessToken, , removeAccessToken] = useAccessToken();
   const navigate = useNavigate();
-  const [accessToken, setAccessToken] = useState(cookies.access_token || "");
   const [user, setUser] = useState<SpotifyUser | null>(null);
 
   const logout = async () => {
-    removeCookie("access_token");
-    setAccessToken("");
+    removeAccessToken();
     navigate("/");
   };
 
@@ -22,23 +20,22 @@ const Home = (): JSX.Element => {
     const init = async () => {
       if (!accessToken) {
         navigate("/");
+        return;
+      }
+      const userProfile = await getUserProfile(accessToken);
+      if (userProfile) {
+        setUser(userProfile);
       } else {
-        const userProfile = await getUserProfile(accessToken);
-        if (userProfile) {
-          setUser(userProfile);
-        } else {
-          await logout();
-        }
+        await logout();
       }
     };
-
     init();
-  }, []);
+  }, [accessToken]);
 
   return (
     <>
       <Header user={user} logout={logout} />
-      <AllTracks accessToken={accessToken} />
+      <AllTracks accessToken={accessToken ?? ""} />
     </>
   );
 };

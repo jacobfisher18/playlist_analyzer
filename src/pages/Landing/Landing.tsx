@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import queryString from "query-string";
-import { useCookies } from "react-cookie";
+import { useAccessToken } from "../../hooks/useAccessToken";
 import { useNavigate } from "react-router-dom";
 import { authWithSpotify, exchangeCodeForToken } from "../../api/auth";
 import { supabase, supabaseInitError } from "../../api/supabase";
@@ -10,7 +10,7 @@ import { COLORS } from "../../styles/colors";
 export type SupabaseStatus = "idle" | "connecting" | "connected" | "error";
 
 export const Landing = (): JSX.Element => {
-  const [cookies, setCookie] = useCookies(["access_token"]);
+  const [accessToken, setAccessToken] = useAccessToken();
   const navigate = useNavigate();
   const [supabaseStatus, setSupabaseStatus] = useState<SupabaseStatus>("idle");
   const [supabaseError, setSupabaseError] = useState<string | null>(null);
@@ -23,15 +23,15 @@ export const Landing = (): JSX.Element => {
       if (code) {
         const access_token = await exchangeCodeForToken(code);
         if (access_token) {
-          setCookie("access_token", access_token);
+          setAccessToken(access_token);
           navigate("/home", { replace: true });
         }
-      } else if (cookies.access_token) {
+      } else if (accessToken) {
         navigate("/home");
       }
     };
     run();
-  }, [navigate, setCookie, cookies.access_token]);
+  }, [navigate, setAccessToken, accessToken]);
 
   useEffect(() => {
     if (!supabase) {
