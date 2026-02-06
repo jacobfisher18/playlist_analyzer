@@ -8,6 +8,8 @@ import type { SpotifyPlayerInstance } from "../types/spotify-player";
 const PLAYER_NAME = "Sortify Web Player";
 const TRANSFER_URL = "https://api.spotify.com/v1/me/player";
 const PLAY_API_URL = "https://api.spotify.com/v1/me/player/play";
+const PAUSE_API_URL = "https://api.spotify.com/v1/me/player/pause";
+const PLAYER_STATE_URL = "https://api.spotify.com/v1/me/player";
 
 function waitForSDK(): Promise<void> {
   if (typeof window === "undefined") return Promise.reject(new Error("No window"));
@@ -97,4 +99,34 @@ export async function startPlayback(
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error?.message || `Playback failed: ${res.status}`);
   }
+}
+
+/**
+ * Pause playback on the given device. Requires user-modify-playback-state scope.
+ */
+export async function pausePlayback(accessToken: string, deviceId: string): Promise<void> {
+  const res = await fetch(`${PAUSE_API_URL}?device_id=${deviceId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  if (!res.ok && res.status !== 204) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Pause failed: ${res.status}`);
+  }
+}
+
+/**
+ * Get current playback state. Returns null if nothing is playing or request fails.
+ */
+export async function getPlaybackState(accessToken: string): Promise<{ isPlaying: boolean } | null> {
+  const res = await fetch(PLAYER_STATE_URL, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (res.status === 204 || !res.ok) return null;
+  const data = await res.json().catch(() => null);
+  if (!data) return null;
+  return { isPlaying: !!data.is_playing };
 }

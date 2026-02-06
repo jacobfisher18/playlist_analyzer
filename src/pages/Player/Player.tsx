@@ -1,8 +1,13 @@
-import { useState } from "react";
-import { Box, Button, Text, Stack } from "@mantine/core";
+import { useState, useEffect, useRef } from "react";
+import { Box, Text, Stack, UnstyledButton } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
 import { useAccessToken } from "../../hooks/useAccessToken";
-import { connectPlayer, startPlayback } from "../../api/spotifyPlayback";
+import {
+  connectPlayer,
+  startPlayback,
+  pausePlayback,
+  getPlaybackState,
+} from "../../api/spotifyPlayback";
 
 /** Sample track for "Play" demo (Spotify Premium required). */
 const SAMPLE_TRACK_URI = "spotify:track:7qiZfU4dY1lWllzX7mPBI3"; // Ed Sheeran - Shape of You
@@ -10,36 +15,87 @@ const SAMPLE_TRACK_URI = "spotify:track:7qiZfU4dY1lWllzX7mPBI3"; // Ed Sheeran -
 const Player = (): JSX.Element => {
   const [accessToken] = useAccessToken();
   const [deviceId, setDeviceId] = useState<string | null>(null);
-  const [status, setStatus] = useState<"idle" | "connecting" | "ready" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [playing, setPlaying] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [playError, setPlayError] = useState<string | null>(null);
+  const connectPromiseRef = useRef<Promise<string> | null>(null);
 
-  const handleConnect = async () => {
-    if (!accessToken) return;
-    setStatus("connecting");
-    setErrorMessage(null);
-    try {
-      const { deviceId: id } = await connectPlayer(() => accessToken);
-      setDeviceId(id);
-      setStatus("ready");
-    } catch (err) {
-      setStatus("error");
-      setErrorMessage(err instanceof Error ? err.message : "Failed to connect player");
+  // Auto-connect when we have a token (e.g. on mount or when navigating to Player)
+  useEffect(() => {
+    if (!accessToken || deviceId) return;
+    setConnectError(null);
+    if (!connectPromiseRef.current) {
+      connectPromiseRef.current = connectPlayer(() => accessToken)
+        .then(({ deviceId: id }) => {
+          setDeviceId(id);
+          return id;
+        })
+        .catch((err) => {
+          setConnectError(err instanceof Error ? err.message : "Failed to connect player");
+          connectPromiseRef.current = null;
+          throw err;
+        })
+        .finally(() => {
+          connectPromiseRef.current = null;
+        });
     }
-  };
+  }, [accessToken, deviceId]);
+
+  // Sync isPlaying from Spotify when we have a device (e.g. after connect or page load)
+  useEffect(() => {
+    if (!accessToken || !deviceId) return;
+    getPlaybackState(accessToken).then((state) => {
+      if (state) setIsPlaying(state.isPlaying);
+    });
+  }, [accessToken, deviceId]);
 
   const handlePlay = async () => {
-    if (!accessToken || !deviceId) return;
-    setPlaying(true);
-    setErrorMessage(null);
+    if (!accessToken) return;
+    setPlayError(null);
+    setLoading(true);
     try {
-      await startPlayback(accessToken, deviceId, SAMPLE_TRACK_URI);
+      let id = deviceId;
+      if (!id) {
+        const connectPromise =
+          connectPromiseRef.current ??
+          (connectPromiseRef.current = connectPlayer(() => accessToken)
+            .then(({ deviceId: d }) => {
+              setDeviceId(d);
+              return d;
+            })
+            .catch((err) => {
+              connectPromiseRef.current = null;
+              throw err;
+            }));
+        id = await connectPromise;
+        connectPromiseRef.current = null;
+      }
+      await startPlayback(accessToken, id, SAMPLE_TRACK_URI);
+      setIsPlaying(true);
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Playback failed");
+      setPlayError(err instanceof Error ? err.message : "Playback failed");
     } finally {
-      setPlaying(false);
+      setLoading(false);
     }
   };
+
+  const handlePause = async () => {
+    if (!accessToken || !deviceId) return;
+    setPlayError(null);
+    setLoading(true);
+    try {
+      await pausePlayback(accessToken, deviceId);
+      setIsPlaying(false);
+    } catch (err) {
+      setPlayError(err instanceof Error ? err.message : "Pause failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const buttonSize = 56;
+  const iconSize = 24;
 
   return (
     <Box style={{ padding: 24 }}>
@@ -48,41 +104,54 @@ const Player = (): JSX.Element => {
           Web player
         </Text>
         <Text size="sm" c="dark.2">
-          Connect this browser as a Spotify device, then play a track. Requires Spotify Premium.
+          Play a track in this browser. Connects automatically when needed. Requires Spotify Premium.
         </Text>
 
-        {status === "idle" && (
-          <Button
-            onClick={handleConnect}
-            color="green"
-            variant="filled"
-            style={{ backgroundColor: COLORS.primary, alignSelf: "flex-start" }}
-          >
-            Connect player
-          </Button>
-        )}
+        <UnstyledButton
+          onClick={isPlaying ? handlePause : handlePlay}
+          disabled={loading || (isPlaying && !deviceId)}
+          style={{
+            width: buttonSize,
+            height: buttonSize,
+            borderRadius: "50%",
+            backgroundColor: COLORS.primary,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: loading ? 0.7 : 1,
+          }}
+          styles={{
+            root: {
+              "&:hover:not(:disabled)": { transform: "scale(1.05)" },
+              "&:disabled": { cursor: "not-allowed" },
+            },
+          }}
+        >
+          {isPlaying ? (
+            <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="#fff">
+              <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+            </svg>
+          ) : (
+            <svg
+              width={iconSize}
+              height={iconSize}
+              viewBox="0 0 24 24"
+              fill="#fff"
+              style={{ marginLeft: 2 }}
+            >
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          )}
+        </UnstyledButton>
 
-        {status === "connecting" && (
-          <Text size="sm" c="dark.2">
-            Connecting…
+        {connectError && (
+          <Text size="sm" c="red">
+            {connectError}
           </Text>
         )}
-
-        {status === "ready" && (
-          <Button
-            onClick={handlePlay}
-            color="green"
-            variant="filled"
-            loading={playing}
-            style={{ backgroundColor: COLORS.primary, alignSelf: "flex-start" }}
-          >
-            Play sample track
-          </Button>
-        )}
-
-        {status === "error" && errorMessage && (
+        {playError && (
           <Text size="sm" c="red">
-            {errorMessage}
+            {playError}
           </Text>
         )}
       </Stack>
