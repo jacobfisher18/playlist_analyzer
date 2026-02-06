@@ -1,4 +1,4 @@
-import { Box, Text, UnstyledButton, Loader, Avatar } from "@mantine/core";
+import { Box, Text, UnstyledButton, Loader, Avatar, Menu } from "@mantine/core";
 import { COLORS } from "../styles/colors";
 import { SpotifyUser } from "../types/user";
 
@@ -25,8 +25,8 @@ const SearchIcon = () => (
 const LogoutIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="18"
-    height="18"
+    width="14"
+    height="14"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -67,7 +67,7 @@ const Sidebar = ({
         display: "flex",
         flexDirection: "column",
         borderRight: "1px solid rgba(255,255,255,0.06)",
-        padding: "20px 12px",
+        padding: "20px 12px 12px 12px",
         backgroundColor: COLORS.sidebarBg,
       }}
     >
@@ -123,29 +123,74 @@ const Sidebar = ({
 
       <Box
         style={{
-          paddingTop: 12,
+          paddingTop: 18,
+          paddingBottom: 12,
+          paddingLeft: 16,
           borderTop: "1px solid rgba(255,255,255,0.06)",
           display: "flex",
-          flexDirection: "column",
-          gap: 8,
+          alignItems: "center",
+          gap: 10,
+          minWidth: 0,
         }}
       >
         {user && (
-          <Box
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "6px 12px",
-              minWidth: 0,
-            }}
-          >
-            <Avatar
-              src={user.images?.[0]?.url}
-              radius="xl"
-              size={36}
-              color="dark"
-            />
+          <>
+            <Menu
+              shadow="md"
+              width={160}
+              position="top-end"
+              closeOnItemClick
+              styles={{
+                dropdown: {
+                  paddingLeft: 14,
+                  paddingRight: 10,
+                  paddingTop: 6,
+                  paddingBottom: 6,
+                },
+                item: {
+                  fontSize: 13,
+                  paddingTop: 6,
+                  paddingBottom: 6,
+                  minHeight: "unset",
+                },
+              }}
+            >
+              <Menu.Target>
+                <UnstyledButton
+                  style={{
+                    borderRadius: "50%",
+                    padding: 0,
+                    lineHeight: 0,
+                    background: "transparent",
+                  }}
+                  styles={{
+                    root: {
+                      border: "none",
+                      outline: "none",
+                      "&:hover": {
+                        opacity: 0.85,
+                        border: "none",
+                        outline: "none",
+                      },
+                      "&:focus": { outline: "none", border: "none" },
+                      "&:focus-visible": { outline: "none", border: "none" },
+                    },
+                  }}
+                >
+                  <Avatar
+                    src={user.images?.[0]?.url}
+                    radius="xl"
+                    size={32}
+                    color="dark"
+                  />
+                </UnstyledButton>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item icon={<LogoutIcon />} onClick={onLogout}>
+                  Log out
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
             <Text
               size="sm"
               fw={500}
@@ -158,31 +203,8 @@ const Sidebar = ({
             >
               {user.display_name}
             </Text>
-          </Box>
+          </>
         )}
-        <UnstyledButton
-          onClick={onLogout}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            width: "100%",
-            padding: "8px 12px",
-            borderRadius: 8,
-            color: "var(--mantine-color-dark-3)",
-          }}
-          styles={{
-            root: {
-              "&:hover": {
-                backgroundColor: "rgba(255,255,255,0.06)",
-                color: "var(--mantine-color-dark-2)",
-              },
-            },
-          }}
-        >
-          <LogoutIcon />
-          <Text size="sm">Log out</Text>
-        </UnstyledButton>
       </Box>
     </Box>
   );
