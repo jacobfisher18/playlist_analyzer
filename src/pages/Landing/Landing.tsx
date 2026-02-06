@@ -77,12 +77,8 @@ export const Landing = (): JSX.Element => {
           boxShadow: "4px 4px 4px rgba(0,0,0,0.08)",
         }}
       >
-        <Title order={3} color={COLORS.primary}>
-          Spotify
-        </Title>
-        <Space h="xs" />
-        <Title order={1} color="#555555">
-          Playlist Search
+        <Title order={1} color={COLORS.primary}>
+          Sortify
         </Title>
         <Space h="lg" />
         <Text color="#555555">

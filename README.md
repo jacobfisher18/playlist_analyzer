@@ -1,6 +1,6 @@
-## Playlist Analyzer
+## Sortify
 
-This project allows users to search among all their tracks in all of their Spotify playlists.
+Sortify lets you search among all your tracks in all of your Spotify playlists.
 
 ### Running Locally
 
