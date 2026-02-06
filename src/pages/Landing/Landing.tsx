@@ -1,19 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import queryString from "query-string";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import { useNavigate } from "react-router-dom";
 import { authWithSpotify, exchangeCodeForToken } from "../../api/auth";
-import { supabase, supabaseInitError } from "../../api/supabase";
 import { Button, Title, Container, Space, Text } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
-
-export type SupabaseStatus = "idle" | "connecting" | "connected" | "error";
 
 export const Landing = (): JSX.Element => {
   const [accessToken, setAccessToken] = useAccessToken();
   const navigate = useNavigate();
-  const [supabaseStatus, setSupabaseStatus] = useState<SupabaseStatus>("idle");
-  const [supabaseError, setSupabaseError] = useState<string | null>(null);
 
   useEffect(() => {
     const run = async () => {
@@ -32,29 +27,6 @@ export const Landing = (): JSX.Element => {
     };
     run();
   }, [navigate, setAccessToken, accessToken]);
-
-  useEffect(() => {
-    if (!supabase) {
-      setSupabaseStatus("error");
-      setSupabaseError(supabaseInitError || "Supabase not available");
-      return;
-    }
-    setSupabaseStatus("connecting");
-    supabase
-      .from("connection_test")
-      .select("message")
-      .limit(1)
-      .single()
-      .then(({ error }) => {
-        if (error) {
-          setSupabaseStatus("error");
-          setSupabaseError(error.message);
-        } else {
-          setSupabaseStatus("connected");
-          setSupabaseError(null);
-        }
-      });
-  }, []);
 
   return (
     <div
@@ -95,14 +67,6 @@ export const Landing = (): JSX.Element => {
         >
           Login with Spotify
         </Button>
-        <Space h="md" />
-        <Text size="sm" color="#888">
-          Supabase:{" "}
-          {supabaseStatus === "idle" && "-"}
-          {supabaseStatus === "connecting" && "connecting..."}
-          {supabaseStatus === "connected" && "connected"}
-          {supabaseStatus === "error" && "error: " + (supabaseError || "unknown")}
-        </Text>
       </Container>
     </div>
   );

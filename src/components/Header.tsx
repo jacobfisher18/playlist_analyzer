@@ -4,16 +4,11 @@ import {
   Button,
   Container,
   Space,
-  useMantineColorScheme,
-  Switch,
 } from "@mantine/core";
 import { SpotifyUser } from "../types/user";
 
 function Header(props: { logout: () => void; user: SpotifyUser | null }) {
   const { user } = props;
-
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-  const dark = colorScheme === "dark";
 
   return (
     <Container
@@ -22,20 +17,11 @@ function Header(props: { logout: () => void; user: SpotifyUser | null }) {
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
+        justifyContent: "flex-end",
         paddingLeft: 0,
         paddingRight: 0,
       }}
     >
-      <Container style={{ margin: 0 }}>
-        <Switch
-          size="md"
-          checked={dark}
-          onChange={() => toggleColorScheme()}
-          onLabel="LIGHT"
-          offLabel="DARK"
-        />
-      </Container>
       <Container
         style={{
           display: "flex",

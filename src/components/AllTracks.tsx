@@ -88,7 +88,7 @@ const AllTracks = (props: Props): JSX.Element => {
           <Space h="sm" />
         </>
       )}
-      <Title order={1}>Spotify Search</Title>
+      <Title order={1}>Sortify</Title>
       <Space h="sm" />
       <form
         onSubmit={(e) => {

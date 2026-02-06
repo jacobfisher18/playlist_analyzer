@@ -1,27 +1,14 @@
-import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Landing from "./pages/Landing/Landing";
-import {
-  MantineProvider,
-  ColorSchemeProvider,
-  ColorScheme,
-} from "@mantine/core";
+import { MantineProvider } from "@mantine/core";
 import { COLORS } from "./styles/colors";
 
 const App = (): JSX.Element => {
-  const [colorScheme, setColorScheme] = useState<ColorScheme>("dark");
-  const toggleColorScheme = (value?: ColorScheme) =>
-    setColorScheme(value || (colorScheme === "dark" ? "light" : "dark"));
-
   return (
-    <ColorSchemeProvider
-        colorScheme={colorScheme}
-        toggleColorScheme={toggleColorScheme}
-      >
-        <MantineProvider
+    <MantineProvider
           theme={{
-            colorScheme,
+            colorScheme: "dark",
             colors: {
               primary: [
                 COLORS.primary,
@@ -48,7 +35,6 @@ const App = (): JSX.Element => {
             </Routes>
           </Router>
         </MantineProvider>
-      </ColorSchemeProvider>
   );
 };
 
