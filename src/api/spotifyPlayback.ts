@@ -102,6 +102,26 @@ export async function startPlayback(
 }
 
 /**
+ * Resume playback on the given device (continues from current position).
+ * Requires user-modify-playback-state scope.
+ */
+export async function resumePlayback(accessToken: string, deviceId: string): Promise<void> {
+  await transferPlayback(accessToken, deviceId);
+  const res = await fetch(`${PLAY_API_URL}?device_id=${deviceId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: "{}",
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Resume failed: ${res.status}`);
+  }
+}
+
+/**
  * Pause playback on the given device. Requires user-modify-playback-state scope.
  */
 export async function pausePlayback(accessToken: string, deviceId: string): Promise<void> {

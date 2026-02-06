@@ -5,6 +5,7 @@ import { useAccessToken } from "../../hooks/useAccessToken";
 import {
   connectPlayer,
   startPlayback,
+  resumePlayback,
   pausePlayback,
   getPlaybackState,
 } from "../../api/spotifyPlayback";
@@ -20,6 +21,7 @@ const Player = (): JSX.Element => {
   const [loading, setLoading] = useState(false);
   const [playError, setPlayError] = useState<string | null>(null);
   const connectPromiseRef = useRef<Promise<string> | null>(null);
+  const justPausedRef = useRef(false);
 
   // Auto-connect when we have a token (e.g. on mount or when navigating to Player)
   useEffect(() => {
@@ -32,7 +34,9 @@ const Player = (): JSX.Element => {
           return id;
         })
         .catch((err) => {
-          setConnectError(err instanceof Error ? err.message : "Failed to connect player");
+          setConnectError(
+            err instanceof Error ? err.message : "Failed to connect player",
+          );
           connectPromiseRef.current = null;
           throw err;
         })
@@ -71,7 +75,12 @@ const Player = (): JSX.Element => {
         id = await connectPromise;
         connectPromiseRef.current = null;
       }
-      await startPlayback(accessToken, id, SAMPLE_TRACK_URI);
+      if (justPausedRef.current) {
+        await resumePlayback(accessToken, id);
+        justPausedRef.current = false;
+      } else {
+        await startPlayback(accessToken, id, SAMPLE_TRACK_URI);
+      }
       setIsPlaying(true);
     } catch (err) {
       setPlayError(err instanceof Error ? err.message : "Playback failed");
@@ -86,6 +95,7 @@ const Player = (): JSX.Element => {
     setLoading(true);
     try {
       await pausePlayback(accessToken, deviceId);
+      justPausedRef.current = true;
       setIsPlaying(false);
     } catch (err) {
       setPlayError(err instanceof Error ? err.message : "Pause failed");
@@ -104,7 +114,8 @@ const Player = (): JSX.Element => {
           Web player
         </Text>
         <Text size="sm" c="dark.2">
-          Play a track in this browser. Connects automatically when needed. Requires Spotify Premium.
+          Play a track in this browser. Connects automatically when needed.
+          Requires Spotify Premium.
         </Text>
 
         <UnstyledButton
@@ -128,7 +139,12 @@ const Player = (): JSX.Element => {
           }}
         >
           {isPlaying ? (
-            <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="#fff">
+            <svg
+              width={iconSize}
+              height={iconSize}
+              viewBox="0 0 24 24"
+              fill="#fff"
+            >
               <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
             </svg>
           ) : (
