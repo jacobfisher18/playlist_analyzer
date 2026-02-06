@@ -35,7 +35,6 @@ Migrations are in `supabase/migrations/`. Apply them with the Supabase CLI (no m
    ```bash
    pnpm db:push
    ```
-   Then open the app; the landing page should show "Supabase: connected" under the Login button.
 
 To add a new migration: `pnpm exec supabase migration new <name>`, edit the new file in `supabase/migrations/`, then run `pnpm db:push`.
 
