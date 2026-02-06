@@ -85,7 +85,7 @@ export const useTracks = (spotifyAccessToken: string) => {
     };
 
     init();
-  }, []);
+  }, [spotifyAccessToken]);
 
   return {
     allTracks,

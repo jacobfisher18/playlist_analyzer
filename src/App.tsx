@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { CookiesProvider } from "react-cookie";
 import Home from "./pages/Home/Home";
 import Landing from "./pages/Landing/Landing";
@@ -26,7 +26,6 @@ const App = (): JSX.Element => {
             colorScheme,
             colors: {
               primary: [
-                // Theme requires 10 shades of each color
                 COLORS.primary,
                 COLORS.primary,
                 COLORS.primary,
@@ -44,11 +43,11 @@ const App = (): JSX.Element => {
           withGlobalStyles
           withNormalizeCSS
         >
-          <Router basename={process.env.PUBLIC_URL}>
-            <div>
-              <Route path="/" exact component={Landing} />
-              <Route path="/home" component={Home} />
-            </div>
+          <Router basename={import.meta.env.BASE_URL}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/home" element={<Home />} />
+            </Routes>
           </Router>
         </MantineProvider>
       </ColorSchemeProvider>

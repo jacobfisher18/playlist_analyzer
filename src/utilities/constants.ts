@@ -7,6 +7,6 @@ export const clientSecret = "36d268ad41f24665a02dabe2d5ac8e5a";
 export const scopes = "user-read-private user-read-email playlist-read-private";
 
 export const redirect_uri =
-  !process.env.NODE_ENV || process.env.NODE_ENV === "development"
-    ? "http://127.0.0.1:3000/"
+  import.meta.env.DEV
+    ? `${window.location.origin}${import.meta.env.BASE_URL}`
     : "https://jacobfisher18.github.io/playlist_analyzer/";

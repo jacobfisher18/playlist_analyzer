@@ -1,25 +1,31 @@
-import React, { useEffect, useState } from "react";
-import { instanceOf } from "prop-types";
-import { withCookies, Cookies } from "react-cookie";
+import { useEffect, useState } from "react";
+import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 import AllTracks from "../../components/AllTracks";
 import Header from "../../components/Header";
 import { getUserProfile } from "../../api/spotify";
 import { SpotifyUser } from "../../types/user";
 
-const Home = (props: { cookies: any; history: any }): JSX.Element => {
-  const [accessToken, setAccessToken] = useState(
-    props.cookies.get("access_token") || ""
-  );
+const Home = (): JSX.Element => {
+  const [cookies, , removeCookie] = useCookies(["access_token"]);
+  const navigate = useNavigate();
+  const [accessToken, setAccessToken] = useState(cookies.access_token || "");
   const [user, setUser] = useState<SpotifyUser | null>(null);
+
+  const logout = async () => {
+    removeCookie("access_token");
+    setAccessToken("");
+    navigate("/");
+  };
 
   useEffect(() => {
     const init = async () => {
       if (!accessToken) {
-        props.history.push("/");
+        navigate("/");
       } else {
-        const user = await getUserProfile(accessToken);
-        if (user) {
-          setUser(user);
+        const userProfile = await getUserProfile(accessToken);
+        if (userProfile) {
+          setUser(userProfile);
         } else {
           await logout();
         }
@@ -29,27 +35,12 @@ const Home = (props: { cookies: any; history: any }): JSX.Element => {
     init();
   }, []);
 
-  /**
-   * 1. Removes the access token cookie
-   * 2. Sets the access token in the state to ''
-   * 3. Navigates to the homepage
-   */
-  const logout = async () => {
-    await props.cookies.remove("access_token");
-    setAccessToken("");
-    props.history.push("/");
-  };
-
   return (
     <>
-      <Header user={user} logout={logout.bind(this)}></Header>
+      <Header user={user} logout={logout} />
       <AllTracks accessToken={accessToken} />
     </>
   );
 };
 
-Home.propTypes = {
-  cookies: instanceOf(Cookies).isRequired,
-};
-
-export default withCookies(Home);
+export default Home;

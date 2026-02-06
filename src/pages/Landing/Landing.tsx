@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import queryString from "query-string";
-import { instanceOf } from "prop-types";
-import { withCookies, Cookies } from "react-cookie";
+import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 import { authWithSpotify, exchangeCodeForToken } from "../../api/auth";
 import { supabase, supabaseInitError } from "../../api/supabase";
 import { Button, Title, Container, Space, Text } from "@mantine/core";
@@ -9,11 +9,9 @@ import { COLORS } from "../../styles/colors";
 
 export type SupabaseStatus = "idle" | "connecting" | "connected" | "error";
 
-export const Landing = (props: {
-  location: any;
-  cookies: any;
-  history: any;
-}): JSX.Element => {
+export const Landing = (): JSX.Element => {
+  const [cookies, setCookie] = useCookies(["access_token"]);
+  const navigate = useNavigate();
   const [supabaseStatus, setSupabaseStatus] = useState<SupabaseStatus>("idle");
   const [supabaseError, setSupabaseError] = useState<string | null>(null);
 
@@ -25,15 +23,15 @@ export const Landing = (props: {
       if (code) {
         const access_token = await exchangeCodeForToken(code);
         if (access_token) {
-          props.cookies.set("access_token", access_token);
-          props.history.replace("/home");
+          setCookie("access_token", access_token);
+          navigate("/home", { replace: true });
         }
-      } else if (props.cookies.get("access_token")) {
-        props.history.push("/home");
+      } else if (cookies.access_token) {
+        navigate("/home");
       }
     };
     run();
-  }, []);
+  }, [navigate, setCookie, cookies.access_token]);
 
   useEffect(() => {
     if (!supabase) {
@@ -47,7 +45,7 @@ export const Landing = (props: {
       .select("message")
       .limit(1)
       .single()
-      .then(({ data, error }) => {
+      .then(({ error }) => {
         if (error) {
           setSupabaseStatus("error");
           setSupabaseError(error.message);
@@ -114,8 +112,4 @@ export const Landing = (props: {
   );
 };
 
-Landing.propTypes = {
-  cookies: instanceOf(Cookies).isRequired,
-};
-
-export default withCookies(Landing);
+export default Landing;

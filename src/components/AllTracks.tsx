@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import { Track, useTracks } from "../hooks/useTracks";
 import {
   Title,
@@ -32,7 +32,7 @@ const AllTracks = (props: Props): JSX.Element => {
         .includes(searchText.toLowerCase());
 
       const artistMatch = track.artists
-        .map((el: any) => el.name)
+        .map((el: { name: string }) => el.name)
         .join()
         .toLowerCase()
         .includes(searchText.toLowerCase());
@@ -59,7 +59,7 @@ const AllTracks = (props: Props): JSX.Element => {
         <tr key={`${track.playlistName}-${track.id}`}>
           <td>{track.playlistName}</td>
           <td>{track.name}</td>
-          <td>{track.artists.map((el: any) => el.name).join(", ")}</td>
+          <td>{track.artists.map((el: { name: string }) => el.name).join(", ")}</td>
           <td>{track.album.name}</td>
         </tr>
       );

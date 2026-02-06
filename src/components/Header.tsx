@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Avatar,
   Text,
@@ -10,7 +9,7 @@ import {
 } from "@mantine/core";
 import { SpotifyUser } from "../types/user";
 
-function Header(props: { logout: Function; user: SpotifyUser | null }) {
+function Header(props: { logout: () => void; user: SpotifyUser | null }) {
   const { user } = props;
 
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
