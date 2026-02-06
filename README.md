@@ -17,7 +17,6 @@ Migrations are in `supabase/migrations/`. Apply them with the Supabase CLI (no m
 
 1. **API credentials (for the app)**  
    In [Supabase Dashboard](https://supabase.com/dashboard): your project → **Project Settings** → **API**. Set in `.env`:
-
    - **Project URL** → `VITE_SUPABASE_URL`
    - **anon public** key → `VITE_SUPABASE_ANON_KEY`
 
@@ -44,6 +43,6 @@ To add a new migration: `pnpm exec supabase migration new <name>`, edit the new 
 
 In the project directory, run:
 
-`pnpm deploy`
+`pnpm deploy:pages`
 
 which will build the app and then publish it with gh-pages.
