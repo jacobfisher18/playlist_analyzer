@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Track, useTracks } from "../hooks/useTracks";
+import { Track } from "../hooks/useTracks";
 import {
   Title,
   TextInput,
@@ -9,22 +9,17 @@ import {
   Space,
   Text,
 } from "@mantine/core";
-import type { SupabaseClient } from "@supabase/supabase-js";
 
 interface Props {
-  accessToken: string;
-  spotifyUserId: string | null;
-  supabase: SupabaseClient | null;
+  allTracks: Track[];
+  loading: boolean;
+  error: boolean;
 }
 
 const AllTracks = (props: Props): JSX.Element => {
   const [filteredTracks, setFilteredTracks] = useState<Array<Track>>([]);
   const [searchText, setSearchText] = useState("");
-  const { allTracks, loading, error, isSyncing } = useTracks(
-    props.accessToken,
-    props.spotifyUserId,
-    props.supabase
-  );
+  const { allTracks, loading, error } = props;
 
   useEffect(() => {
     applyFilter();
@@ -79,15 +74,6 @@ const AllTracks = (props: Props): JSX.Element => {
 
   return (
     <Container p="sm">
-      {isSyncing && (
-        <>
-          <Loader size="sm" />
-          <Text size="sm" c="dimmed" mb="xs">
-            Syncing with Spotify…
-          </Text>
-          <Space h="sm" />
-        </>
-      )}
       <Title order={1}>Sortify</Title>
       <Space h="sm" />
       <form

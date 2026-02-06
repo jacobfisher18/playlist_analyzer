@@ -3,12 +3,17 @@ import {
   Text,
   Button,
   Container,
+  Loader,
   Space,
 } from "@mantine/core";
 import { SpotifyUser } from "../types/user";
 
-function Header(props: { logout: () => void; user: SpotifyUser | null }) {
-  const { user } = props;
+function Header(props: {
+  logout: () => void;
+  user: SpotifyUser | null;
+  isSyncing?: boolean;
+}) {
+  const { user, isSyncing } = props;
 
   return (
     <Container
@@ -17,11 +22,30 @@ function Header(props: { logout: () => void; user: SpotifyUser | null }) {
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "flex-end",
+        justifyContent: "space-between",
         paddingLeft: 0,
         paddingRight: 0,
       }}
     >
+      <Container
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          margin: 0,
+          float: "left",
+        }}
+      >
+        {isSyncing && (
+          <>
+            <Loader size="sm" />
+            <Space w="xs" />
+            <Text size="sm" c="dimmed">
+              Syncing
+            </Text>
+          </>
+        )}
+      </Container>
       <Container
         style={{
           display: "flex",

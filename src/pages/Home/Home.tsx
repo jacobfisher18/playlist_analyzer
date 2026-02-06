@@ -6,11 +6,17 @@ import Header from "../../components/Header";
 import { getUserProfile } from "../../api/spotify";
 import { SpotifyUser } from "../../types/user";
 import { supabase } from "../../api/supabase";
+import { useTracks } from "../../hooks/useTracks";
 
 const Home = (): JSX.Element => {
   const [accessToken, , removeAccessToken] = useAccessToken();
   const navigate = useNavigate();
   const [user, setUser] = useState<SpotifyUser | null>(null);
+  const { allTracks, loading, error, isSyncing } = useTracks(
+    accessToken ?? "",
+    user?.id ?? null,
+    supabase
+  );
 
   const logout = async () => {
     removeAccessToken();
@@ -35,11 +41,11 @@ const Home = (): JSX.Element => {
 
   return (
     <>
-      <Header user={user} logout={logout} />
+      <Header user={user} logout={logout} isSyncing={isSyncing} />
       <AllTracks
-        accessToken={accessToken ?? ""}
-        spotifyUserId={user?.id ?? null}
-        supabase={supabase}
+        allTracks={allTracks}
+        loading={loading}
+        error={error}
       />
     </>
   );
