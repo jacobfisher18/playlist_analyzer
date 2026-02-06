@@ -7,7 +7,7 @@ This project allows users to search among all their tracks in all of their Spoti
 1. Copy `.env.example` to `.env` and fill in values (see Supabase below).
 2. In the project directory, run:
 
-   `npm run dev`
+   `pnpm dev`
 
    which will run the app (by default at http://localhost:5173/playlist_analyzer/).
 
@@ -25,8 +25,8 @@ Migrations are in `supabase/migrations/`. Apply them with the Supabase CLI (no m
    From the project root:
 
    ```bash
-   npx supabase login
-   npm run db:link
+   pnpm exec supabase login
+   pnpm db:link
    ```
 
    When linking, use your project's database password (Dashboard → Project Settings → Database).
@@ -34,16 +34,16 @@ Migrations are in `supabase/migrations/`. Apply them with the Supabase CLI (no m
 3. **Apply migrations**  
    Push migrations to the linked project:
    ```bash
-   npm run db:push
+   pnpm db:push
    ```
    Then open the app; the landing page should show "Supabase: connected" under the Login button.
 
-To add a new migration: `npx supabase migration new <name>`, edit the new file in `supabase/migrations/`, then run `npm run db:push`.
+To add a new migration: `pnpm exec supabase migration new <name>`, edit the new file in `supabase/migrations/`, then run `pnpm db:push`.
 
 ### Deployments
 
 In the project directory, run:
 
-`npm run deploy`
+`pnpm deploy`
 
 which will build the app and then publish it with gh-pages.
