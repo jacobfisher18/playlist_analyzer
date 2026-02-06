@@ -4,7 +4,8 @@ export const clientID = "bc800faa1cb3438da94f230ba04a1e1b";
 
 export const clientSecret = "36d268ad41f24665a02dabe2d5ac8e5a";
 
-export const scopes = "user-read-private user-read-email playlist-read-private";
+export const scopes =
+  "user-read-private user-read-email playlist-read-private streaming user-modify-playback-state";
 
 export const redirect_uri =
   import.meta.env.DEV

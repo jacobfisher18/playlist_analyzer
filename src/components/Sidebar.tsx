@@ -1,4 +1,5 @@
 import { Box, Text, UnstyledButton, Loader, Avatar, Menu } from "@mantine/core";
+import { useLocation, useNavigate } from "react-router-dom";
 import { COLORS } from "../styles/colors";
 import { SpotifyUser } from "../types/user";
 
@@ -19,6 +20,23 @@ const SearchIcon = () => (
   >
     <circle cx="11" cy="11" r="8" />
     <path d="m21 21-4.35-4.35" />
+  </svg>
+);
+
+const PlayerIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ flexShrink: 0 }}
+  >
+    <polygon points="5 3 19 12 5 21 5 3" />
   </svg>
 );
 
@@ -48,12 +66,26 @@ interface SidebarProps {
   onLogoClick: () => void;
 }
 
+const navButtonStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 12,
+  width: "100%",
+  padding: "10px 12px",
+  borderRadius: 8,
+  color: "var(--mantine-color-dark-1)",
+};
+
 const Sidebar = ({
   user,
   isSyncing,
   onLogout,
   onLogoClick,
 }: SidebarProps): JSX.Element => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isPlayer = location.pathname === "/home/player";
+
   return (
     <Box
       component="aside"
@@ -97,14 +129,10 @@ const Sidebar = ({
 
       <Box component="nav" style={{ flex: 1 }}>
         <UnstyledButton
+          onClick={() => navigate("/home")}
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            width: "100%",
-            padding: "10px 12px",
-            borderRadius: 8,
-            color: "var(--mantine-color-dark-1)",
+            ...navButtonStyle,
+            backgroundColor: !isPlayer ? "rgba(255,255,255,0.06)" : undefined,
           }}
           styles={{
             root: {
@@ -117,6 +145,25 @@ const Sidebar = ({
           <SearchIcon />
           <Text size="sm" fw={500}>
             Search
+          </Text>
+        </UnstyledButton>
+        <UnstyledButton
+          onClick={() => navigate("/home/player")}
+          style={{
+            ...navButtonStyle,
+            backgroundColor: isPlayer ? "rgba(255,255,255,0.06)" : undefined,
+          }}
+          styles={{
+            root: {
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.06)",
+              },
+            },
+          }}
+        >
+          <PlayerIcon />
+          <Text size="sm" fw={500}>
+            Player
           </Text>
         </UnstyledButton>
       </Box>

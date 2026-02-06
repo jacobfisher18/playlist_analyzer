@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Box } from "@mantine/core";
+import { useLocation, useNavigate } from "react-router-dom";
 import { COLORS } from "../../styles/colors";
 import { useAccessToken } from "../../hooks/useAccessToken";
-import { useNavigate } from "react-router-dom";
 import AllTracks from "../../components/AllTracks";
 import Sidebar from "../../components/Sidebar";
+import Player from "../Player/Player";
 import { getUserProfile } from "../../api/spotify";
 import { SpotifyUser } from "../../types/user";
 import { supabase } from "../../api/supabase";
@@ -15,6 +16,8 @@ const SPOTIFY_USER_ID_KEY = "spotify_user_id";
 const Home = (): JSX.Element => {
   const [accessToken, , removeAccessToken] = useAccessToken();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isPlayerView = location.pathname === "/home/player";
   const [user, setUser] = useState<SpotifyUser | null>(null);
   const [searchText, setSearchText] = useState("");
   const [spotifyUserId, setSpotifyUserId] = useState<string | null>(() =>
@@ -58,7 +61,10 @@ const Home = (): JSX.Element => {
         user={user}
         isSyncing={isSyncing}
         onLogout={logout}
-        onLogoClick={() => setSearchText("")}
+        onLogoClick={() => {
+          setSearchText("");
+          navigate("/home");
+        }}
       />
       <Box
         style={{
@@ -67,13 +73,17 @@ const Home = (): JSX.Element => {
           backgroundColor: COLORS.mainBg,
         }}
       >
-        <AllTracks
-          allTracks={allTracks}
-          loading={loading}
-          error={error}
-          searchText={searchText}
-          onSearchTextChange={setSearchText}
-        />
+        {isPlayerView ? (
+          <Player />
+        ) : (
+          <AllTracks
+            allTracks={allTracks}
+            loading={loading}
+            error={error}
+            searchText={searchText}
+            onSearchTextChange={setSearchText}
+          />
+        )}
       </Box>
     </Box>
   );
