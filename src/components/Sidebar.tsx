@@ -40,6 +40,25 @@ const PlayerIcon = () => (
   </svg>
 );
 
+const SorterIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ flexShrink: 0 }}
+  >
+    <path d="M3 6h18" />
+    <path d="M7 12h10" />
+    <path d="M10 18h4" />
+  </svg>
+);
+
 const LogoutIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -85,6 +104,7 @@ const Sidebar = ({
   const location = useLocation();
   const navigate = useNavigate();
   const isPlayer = location.pathname === "/home/player";
+  const isSorter = location.pathname === "/home/sorter";
 
   return (
     <Box
@@ -164,6 +184,25 @@ const Sidebar = ({
           <PlayerIcon />
           <Text size="sm" fw={500}>
             Player
+          </Text>
+        </UnstyledButton>
+        <UnstyledButton
+          onClick={() => navigate("/home/sorter")}
+          style={{
+            ...navButtonStyle,
+            backgroundColor: isSorter ? "rgba(255,255,255,0.06)" : undefined,
+          }}
+          styles={{
+            root: {
+              "&:hover": {
+                backgroundColor: "rgba(255,255,255,0.06)",
+              },
+            },
+          }}
+        >
+          <SorterIcon />
+          <Text size="sm" fw={500}>
+            Sorter
           </Text>
         </UnstyledButton>
       </Box>

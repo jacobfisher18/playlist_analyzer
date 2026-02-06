@@ -7,6 +7,10 @@ const GET_USER_PROFILE_URL = "https://api.spotify.com/v1/me";
 const GET_ALL_USER_PLAYLISTS_URL = `https://api.spotify.com/v1/me/playlists?&limit=${MAX_PLAYLISTS_PER_REQUEST}`;
 const GET_PLAYLIST_TRACKS_URL = (playlistId: string) =>
   `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+const REMOVE_PLAYLIST_TRACKS_URL = (playlistId: string) =>
+  `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+const ADD_PLAYLIST_TRACKS_URL = (playlistId: string) =>
+  `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
 
 /**
  * A generic request to the Spotify API; all fetches should use this
@@ -140,6 +144,69 @@ export const getAllTracksForSinglePlaylist = async (
     return tracks;
   } catch (err) {
     console.error(`Error getting tracks for playlist ${playlistId}`, err);
+    return null;
+  }
+};
+
+/**
+ * Remove one or more tracks from a playlist. Uses snapshot_id for safe concurrent updates.
+ * Returns the new snapshot_id on success, or null on failure.
+ */
+export const removeTracksFromPlaylist = async (
+  accessToken: string,
+  playlistId: string,
+  trackUris: string[],
+  snapshotId: string
+): Promise<{ snapshot_id: string } | null> => {
+  if (trackUris.length === 0) return null;
+  try {
+    const response = await fetch(REMOVE_PLAYLIST_TRACKS_URL(playlistId), {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        tracks: trackUris.map((uri) => ({ uri })),
+        snapshot_id: snapshotId,
+      }),
+    });
+    if (response.status === 200) {
+      return response.json();
+    }
+    throw new Error(`Received ${response.status} when removing tracks`);
+  } catch (err) {
+    console.error("Error removing tracks from playlist", err);
+    return null;
+  }
+};
+
+/**
+ * Add one or more tracks to a playlist. Returns the new snapshot_id on success, or null on failure.
+ */
+export const addTracksToPlaylist = async (
+  accessToken: string,
+  playlistId: string,
+  trackUris: string[]
+): Promise<{ snapshot_id: string } | null> => {
+  if (trackUris.length === 0) return null;
+  try {
+    const response = await fetch(ADD_PLAYLIST_TRACKS_URL(playlistId), {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ uris: trackUris }),
+    });
+    if (response.status === 201) {
+      return response.json();
+    }
+    throw new Error(`Received ${response.status} when adding tracks`);
+  } catch (err) {
+    console.error("Error adding tracks to playlist", err);
     return null;
   }
 };

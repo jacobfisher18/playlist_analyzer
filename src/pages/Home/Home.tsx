@@ -7,6 +7,7 @@ import AllTracks from "../../components/AllTracks";
 import Sidebar from "../../components/Sidebar";
 import PlayerBar from "../../components/PlayerBar";
 import Player from "../Player/Player";
+import Sorter from "../Sorter/Sorter";
 import { PlayerProvider, usePlayer } from "../../contexts/PlayerContext";
 import { getUserProfile } from "../../api/spotify";
 import { SpotifyUser } from "../../types/user";
@@ -26,6 +27,10 @@ function HomeLayout({
   searchText,
   setSearchText,
   isPlayerView,
+  isSorterView,
+  spotifyUserId,
+  accessToken,
+  supabase,
 }: {
   removeAccessToken: () => void;
   navigate: (path: string) => void;
@@ -37,6 +42,10 @@ function HomeLayout({
   searchText: string;
   setSearchText: (s: string) => void;
   isPlayerView: boolean;
+  isSorterView: boolean;
+  spotifyUserId: string | null;
+  accessToken: string | null;
+  supabase: import("@supabase/supabase-js").SupabaseClient | null;
 }) {
   const { pause } = usePlayer();
   const logout = async () => {
@@ -76,6 +85,13 @@ function HomeLayout({
         >
           {isPlayerView ? (
             <Player />
+          ) : isSorterView ? (
+            <Sorter
+              allTracks={allTracks}
+              accessToken={accessToken}
+              spotifyUserId={spotifyUserId}
+              supabase={supabase}
+            />
           ) : (
             <AllTracks
               allTracks={allTracks}
@@ -97,6 +113,7 @@ const Home = (): JSX.Element => {
   const navigate = useNavigate();
   const location = useLocation();
   const isPlayerView = location.pathname === "/home/player";
+  const isSorterView = location.pathname === "/home/sorter";
   const [user, setUser] = useState<SpotifyUser | null>(null);
   const [searchText, setSearchText] = useState("");
   const [spotifyUserId, setSpotifyUserId] = useState<string | null>(() =>
@@ -143,6 +160,10 @@ const Home = (): JSX.Element => {
         searchText={searchText}
         setSearchText={setSearchText}
         isPlayerView={isPlayerView}
+        isSorterView={isSorterView}
+        spotifyUserId={spotifyUserId}
+        accessToken={accessToken ?? null}
+        supabase={supabase}
       />
     </PlayerProvider>
   );
