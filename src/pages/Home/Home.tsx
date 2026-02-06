@@ -8,17 +8,25 @@ import { SpotifyUser } from "../../types/user";
 import { supabase } from "../../api/supabase";
 import { useTracks } from "../../hooks/useTracks";
 
+const SPOTIFY_USER_ID_KEY = "spotify_user_id";
+
 const Home = (): JSX.Element => {
   const [accessToken, , removeAccessToken] = useAccessToken();
   const navigate = useNavigate();
   const [user, setUser] = useState<SpotifyUser | null>(null);
+  const [spotifyUserId, setSpotifyUserId] = useState<string | null>(() =>
+    typeof window !== "undefined"
+      ? localStorage.getItem(SPOTIFY_USER_ID_KEY)
+      : null,
+  );
   const { allTracks, loading, error, isSyncing } = useTracks(
     accessToken ?? "",
-    user?.id ?? null,
-    supabase
+    spotifyUserId,
+    supabase,
   );
 
   const logout = async () => {
+    localStorage.removeItem(SPOTIFY_USER_ID_KEY);
     removeAccessToken();
     navigate("/");
   };
@@ -32,6 +40,8 @@ const Home = (): JSX.Element => {
       const userProfile = await getUserProfile(accessToken);
       if (userProfile) {
         setUser(userProfile);
+        setSpotifyUserId(userProfile.id);
+        localStorage.setItem(SPOTIFY_USER_ID_KEY, userProfile.id);
       } else {
         await logout();
       }
@@ -42,11 +52,7 @@ const Home = (): JSX.Element => {
   return (
     <>
       <Header user={user} logout={logout} isSyncing={isSyncing} />
-      <AllTracks
-        allTracks={allTracks}
-        loading={loading}
-        error={error}
-      />
+      <AllTracks allTracks={allTracks} loading={loading} error={error} />
     </>
   );
 };
