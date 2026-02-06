@@ -6,3 +6,12 @@ body {
   margin: 0;
   background-color: #111111;
 }
+
+.search-tracks-table tbody tr,
+.search-tracks-table tbody tr td {
+  cursor: default;
+}
+
+.search-tracks-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}

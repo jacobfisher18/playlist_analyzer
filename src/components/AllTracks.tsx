@@ -12,6 +12,7 @@ import {
   Flex,
   Group,
 } from "@mantine/core";
+import { usePlayer } from "../contexts/PlayerContext";
 
 const MAX_PLAYLIST_TAGS = 10;
 
@@ -32,6 +33,7 @@ const AllTracks = (props: Props): JSX.Element => {
     searchText,
     onSearchTextChange: setSearchText,
   } = props;
+  const { playTrack } = usePlayer();
 
   const hasQuery = searchText.trim() !== "";
 
@@ -82,7 +84,10 @@ const AllTracks = (props: Props): JSX.Element => {
     if (!filteredTracks.length) return null;
 
     return filteredTracks.slice(0, maxSize).map((track) => (
-      <tr key={`${track.playlistName}-${track.id}`}>
+      <tr
+        key={`${track.playlistName}-${track.id}`}
+        onDoubleClick={() => playTrack(`spotify:track:${track.id}`)}
+      >
         <td>{track.playlistName}</td>
         <td>{track.name}</td>
         <td>
@@ -154,17 +159,19 @@ const AllTracks = (props: Props): JSX.Element => {
 
       {/* Results: table or empty state */}
       {filteredTracks.length > 0 ? (
-        <Table>
-          <thead>
-            <tr>
-              <th>Playlist</th>
-              <th>Title</th>
-              <th>Artist</th>
-              <th>Album</th>
-            </tr>
-          </thead>
-          <tbody>{renderFilteredTracks()}</tbody>
-        </Table>
+        <Box className="search-tracks-table">
+          <Table>
+            <thead>
+              <tr>
+                <th>Playlist</th>
+                <th>Title</th>
+                <th>Artist</th>
+                <th>Album</th>
+              </tr>
+            </thead>
+            <tbody>{renderFilteredTracks()}</tbody>
+          </Table>
+        </Box>
       ) : (
         <Text size="sm" c="dimmed">
           No tracks match your search.

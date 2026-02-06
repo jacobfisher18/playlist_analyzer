@@ -5,7 +5,9 @@ import { COLORS } from "../../styles/colors";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import AllTracks from "../../components/AllTracks";
 import Sidebar from "../../components/Sidebar";
+import PlayerBar from "../../components/PlayerBar";
 import Player from "../Player/Player";
+import { PlayerProvider } from "../../contexts/PlayerContext";
 import { getUserProfile } from "../../api/spotify";
 import { SpotifyUser } from "../../types/user";
 import { supabase } from "../../api/supabase";
@@ -70,20 +72,35 @@ const Home = (): JSX.Element => {
         style={{
           flex: 1,
           minWidth: 0,
+          display: "flex",
+          flexDirection: "column",
+          height: "100vh",
+          overflow: "hidden",
           backgroundColor: COLORS.mainBg,
         }}
       >
-        {isPlayerView ? (
-          <Player />
-        ) : (
-          <AllTracks
-            allTracks={allTracks}
-            loading={loading}
-            error={error}
-            searchText={searchText}
-            onSearchTextChange={setSearchText}
-          />
-        )}
+        <PlayerProvider accessToken={accessToken ?? undefined}>
+          <Box
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflow: "auto",
+            }}
+          >
+            {isPlayerView ? (
+              <Player />
+            ) : (
+              <AllTracks
+                allTracks={allTracks}
+                loading={loading}
+                error={error}
+                searchText={searchText}
+                onSearchTextChange={setSearchText}
+              />
+            )}
+          </Box>
+          <PlayerBar />
+        </PlayerProvider>
       </Box>
     </Box>
   );
