@@ -91,11 +91,30 @@ const AllTracks = (props: Props): JSX.Element => {
   }
 
   const resultsContent = hasQuery && (
-    <Box>
-      <Text size="sm" c="dimmed" mb="xs">
-        Search results for &quot;{searchText.trim()}&quot;
-      </Text>
+    <Box mt="lg">
+      {/* Single results header: query + count on one line */}
+      <Flex
+        justify="space-between"
+        align="center"
+        wrap="wrap"
+        gap="xs"
+        mb={filteredTracks.length > 0 ? "sm" : "xs"}
+      >
+        <Text size="sm" c="dimmed">
+          Search results for &quot;{searchText.trim()}&quot;
+          {filteredTracks.length > 0 && (
+            <>
+              {" · "}
+              <Text component="span" fw={500} c="dark.1">
+                {filteredTracks.length} track
+                {filteredTracks.length !== 1 ? "s" : ""}
+              </Text>
+            </>
+          )}
+        </Text>
+      </Flex>
 
+      {/* Playlist context: which playlists these results came from */}
       {filteredTracks.length > 0 && (
         <Group spacing="xs" noWrap={false} mb="md">
           {displayedPlaylists.map((name) => (
@@ -111,11 +130,7 @@ const AllTracks = (props: Props): JSX.Element => {
         </Group>
       )}
 
-      <Text size="sm" c="dimmed" mb="sm">
-        {filteredTracks.length} track
-        {filteredTracks.length !== 1 ? "s" : ""} found
-      </Text>
-
+      {/* Results: table or empty state */}
       {filteredTracks.length > 0 ? (
         <Table>
           <thead>
