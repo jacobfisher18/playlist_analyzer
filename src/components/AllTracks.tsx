@@ -60,11 +60,22 @@ const AllTracks = (props: Props): JSX.Element => {
     setFilteredTracks(filtered);
   };
 
-  const uniquePlaylists = [
-    ...new Set(filteredTracks.map((t) => t.playlistName)),
-  ];
-  const displayedPlaylists = uniquePlaylists.slice(0, MAX_PLAYLIST_TAGS);
-  const remainingCount = uniquePlaylists.length - MAX_PLAYLIST_TAGS;
+  // Single pass: count tracks per playlist, then sort by count descending
+  const playlistCounts = filteredTracks.reduce<Map<string, number>>(
+    (acc, t) => {
+      acc.set(t.playlistName, (acc.get(t.playlistName) ?? 0) + 1);
+      return acc;
+    },
+    new Map(),
+  );
+  const playlistsByCount = [...playlistCounts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
+  const displayedPlaylists = playlistsByCount.slice(0, MAX_PLAYLIST_TAGS);
+  const remainingCount = Math.max(
+    0,
+    playlistsByCount.length - MAX_PLAYLIST_TAGS,
+  );
 
   const renderFilteredTracks = () => {
     const maxSize = 500;
@@ -117,9 +128,20 @@ const AllTracks = (props: Props): JSX.Element => {
       {/* Playlist context: which playlists these results came from */}
       {filteredTracks.length > 0 && (
         <Group spacing="xs" noWrap={false} mb="md">
-          {displayedPlaylists.map((name) => (
+          {displayedPlaylists.map(({ name, count }) => (
             <Badge key={name} variant="light" size="sm" radius="sm">
-              {name}
+              <span>
+                {name}
+                <span
+                  style={{
+                    color: "var(--mantine-color-green-6)",
+                    marginLeft: 4,
+                    opacity: 0.6,
+                  }}
+                >
+                  ({count})
+                </span>
+              </span>
             </Badge>
           ))}
           {remainingCount > 0 && (
