@@ -8,5 +8,5 @@ export const scopes = "user-read-private user-read-email playlist-read-private";
 
 export const redirect_uri =
   !process.env.NODE_ENV || process.env.NODE_ENV === "development"
-    ? "http://localhost:3000/"
+    ? "http://127.0.0.1:3000/"
     : "https://jacobfisher18.github.io/playlist_analyzer/";

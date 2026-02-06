@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import queryString from "query-string";
 import { instanceOf } from "prop-types";
 import { withCookies, Cookies } from "react-cookie";
-import { authWithSpotify } from "../../api/auth";
+import { authWithSpotify, exchangeCodeForToken } from "../../api/auth";
 import { Button, Title, Container, Space, Text } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
 
@@ -12,14 +12,21 @@ export const Landing = (props: {
   history: any;
 }): JSX.Element => {
   useEffect(() => {
-    const access_token = queryString.parse(location.hash).access_token || "";
+    const run = async () => {
+      const query = queryString.parse(location.search);
+      const code = typeof query.code === "string" ? query.code : "";
 
-    if (access_token) {
-      props.cookies.set("access_token", access_token);
-      props.history.push("/home");
-    } else if (props.cookies.get("access_token")) {
-      props.history.push("/home");
-    }
+      if (code) {
+        const access_token = await exchangeCodeForToken(code);
+        if (access_token) {
+          props.cookies.set("access_token", access_token);
+          props.history.replace("/home");
+        }
+      } else if (props.cookies.get("access_token")) {
+        props.history.push("/home");
+      }
+    };
+    run();
   }, []);
 
   return (
