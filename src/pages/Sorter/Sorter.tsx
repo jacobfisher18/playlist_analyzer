@@ -19,8 +19,6 @@ import { usePlayer } from "../../contexts/PlayerContext";
 import type { Track } from "../../hooks/useTracks";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const MAX_RECOMMENDATIONS = 5;
-
 /** Spotify track object as returned in playlist items (cache/API) */
 export interface SpotifyTrackObject {
   id: string;
@@ -115,8 +113,7 @@ function getRecommendations(
   }
   return [...byPlaylist.entries()]
     .map(([playlistName, count]) => ({ playlistName, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, MAX_RECOMMENDATIONS);
+    .sort((a, b) => b.count - a.count);
 }
 
 export default function Sorter({
@@ -143,6 +140,8 @@ export default function Sorter({
     playlistId: string;
     playlistName: string;
   } | null>(null);
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
+  const [removeLoading, setRemoveLoading] = useState(false);
 
   useEffect(() => {
     if (!supabase || !spotifyUserId) {
@@ -283,6 +282,36 @@ export default function Sorter({
     }
   };
 
+  const handleRemoveFromPlaylist = async () => {
+    if (
+      !accessToken ||
+      !currentTrack?.uri ||
+      !selectedPlaylist ||
+      removeLoading
+    )
+      return;
+    setRemoveLoading(true);
+    try {
+      const removeResult = await removeTracksFromPlaylist(
+        accessToken,
+        selectedPlaylist.id,
+        [currentTrack.uri],
+        selectedPlaylist.snapshotId
+      );
+      if (!removeResult) return;
+      setSelectedPlaylist((prev) =>
+        prev ? { ...prev, snapshotId: removeResult.snapshot_id } : null
+      );
+      setPlaylistItems((prev) => prev.filter((_, i) => i !== currentIndex));
+      if (currentIndex >= playlistItems.length - 1 && currentIndex > 0) {
+        setCurrentIndex(currentIndex - 1);
+      }
+      setRemoveConfirmOpen(false);
+    } finally {
+      setRemoveLoading(false);
+    }
+  };
+
   if (selectedPlaylist && currentTrack) {
     const albumImage =
       currentTrack.album?.images?.[0]?.url ??
@@ -291,249 +320,335 @@ export default function Sorter({
     return (
       <Box
         style={{
-          padding: 24,
-          maxWidth: 560,
-          margin: "0 auto",
+          display: "flex",
+          flex: 1,
+          minWidth: 0,
+          minHeight: 0,
         }}
       >
-        <Group position="apart" align="center" mb="lg">
-          <Text size="sm" c="dimmed">
-            Sorting playlist
-          </Text>
-          <UnstyledButton
-            onClick={handleClearPlaylist}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              color: "var(--mantine-color-dark-2)",
-              fontSize: 13,
-            }}
-          >
-            <ClearIcon />
-            <span>Clear & search again</span>
-          </UnstyledButton>
-        </Group>
-        <Text fw={600} size="lg" mb="xl">
-          {selectedPlaylist.name}
-        </Text>
-
-        <Paper
-          p="md"
-          radius="md"
+        <Box
           style={{
-            backgroundColor: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            marginBottom: 24,
+            flex: 1,
+            minWidth: 0,
+            padding: 24,
+            overflow: "auto",
           }}
         >
-          <Group noWrap spacing="md" align="flex-start">
+          <Group align="center" spacing="xs" mb="lg">
+            <Text size="sm" c="dimmed">
+              Sorting
+            </Text>
+            <Text size="sm" fw={600}>
+              {selectedPlaylist.name}
+            </Text>
             <UnstyledButton
-              onClick={() => playTrack(currentTrack.uri)}
-              onDoubleClick={() => playTrack(currentTrack.uri)}
-              style={{ lineHeight: 0, flexShrink: 0 }}
-              className="sorter-cover-button"
+              onClick={handleClearPlaylist}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                color: "var(--mantine-color-dark-2)",
+                fontSize: 12,
+              }}
             >
-              <Box
-                style={{
-                  width: 112,
-                  height: 112,
-                  borderRadius: 8,
-                  overflow: "hidden",
-                  backgroundColor: "rgba(0,0,0,0.3)",
-                  position: "relative",
-                }}
+              <ClearIcon />
+              <span>Clear</span>
+            </UnstyledButton>
+          </Group>
+
+          <Paper
+            p="md"
+            radius="md"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              marginBottom: 24,
+            }}
+          >
+            <Group noWrap spacing="md" align="flex-start">
+              <UnstyledButton
+                onClick={() => playTrack(currentTrack.uri)}
+                onDoubleClick={() => playTrack(currentTrack.uri)}
+                style={{ lineHeight: 0, flexShrink: 0 }}
+                className="sorter-cover-button"
               >
-                {albumImage ? (
-                  <img
-                    src={albumImage}
-                    alt=""
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : null}
                 <Box
                   style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "rgba(0,0,0,0.4)",
-                    opacity: 0,
-                    transition: "opacity 0.15s ease",
+                    width: 112,
+                    height: 112,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    backgroundColor: "rgba(0,0,0,0.3)",
+                    position: "relative",
                   }}
-                  className="sorter-play-overlay"
                 >
-                  <Box style={{ color: "#fff" }}>
-                    <PlayIcon />
+                  {albumImage ? (
+                    <img
+                      src={albumImage}
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : null}
+                  <Box
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "rgba(0,0,0,0.4)",
+                      opacity: 0,
+                      transition: "opacity 0.15s ease",
+                    }}
+                    className="sorter-play-overlay"
+                  >
+                    <Box style={{ color: "#fff" }}>
+                      <PlayIcon />
+                    </Box>
                   </Box>
                 </Box>
+              </UnstyledButton>
+              <Box
+                style={{ flex: 1, minWidth: 0 }}
+                onDoubleClick={() => playTrack(currentTrack.uri)}
+              >
+                <Text fw={600} size="md" lineClamp={1}>
+                  {currentTrack.name}
+                </Text>
+                <Text size="sm" c="dimmed" lineClamp={1} mt={4}>
+                  {currentTrack.artists.map((a) => a.name).join(", ")}
+                </Text>
+                <Text size="xs" c="dimmed" lineClamp={1} mt={2}>
+                  {currentTrack.album?.name}
+                </Text>
               </Box>
-            </UnstyledButton>
-            <Box
-              style={{ flex: 1, minWidth: 0 }}
-              onDoubleClick={() => playTrack(currentTrack.uri)}
-            >
-              <Text fw={600} size="md" lineClamp={1}>
-                {currentTrack.name}
-              </Text>
-              <Text size="sm" c="dimmed" lineClamp={1} mt={4}>
-                {currentTrack.artists.map((a) => a.name).join(", ")}
-              </Text>
-              <Text size="xs" c="dimmed" lineClamp={1} mt={2}>
-                {currentTrack.album?.name}
-              </Text>
-            </Box>
-          </Group>
-        </Paper>
+            </Group>
+          </Paper>
 
-        <style>{`
+          <style>{`
           .sorter-cover-button:hover .sorter-play-overlay { opacity: 1 !important; }
         `}</style>
 
-        <Modal
-          opened={moveConfirmTarget != null}
-          onClose={() => setMoveConfirmTarget(null)}
-          title="Move track?"
-          centered
-        >
-          {moveConfirmTarget && (
+          <Modal
+            opened={moveConfirmTarget != null}
+            onClose={() => setMoveConfirmTarget(null)}
+            title="Move track?"
+            centered
+          >
+            {moveConfirmTarget && (
+              <Stack spacing="md">
+                <Text size="sm" c="dimmed">
+                  Move <Text component="span" fw={600} c="dark.0">{currentTrack.name}</Text> from{" "}
+                  <Text component="span" fw={500}>{selectedPlaylist.name}</Text> to{" "}
+                  <Text component="span" fw={500}>{moveConfirmTarget.playlistName}</Text>?
+                </Text>
+                <Group position="right" spacing="xs">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => setMoveConfirmTarget(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="green"
+                    loading={moveLoading === moveConfirmTarget.playlistId}
+                    onClick={async () => {
+                      await handleMoveToPlaylist(moveConfirmTarget.playlistId);
+                      setMoveConfirmTarget(null);
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                </Group>
+              </Stack>
+            )}
+          </Modal>
+
+          <Modal
+            opened={removeConfirmOpen}
+            onClose={() => setRemoveConfirmOpen(false)}
+            title="Remove from playlist?"
+            centered
+          >
             <Stack spacing="md">
               <Text size="sm" c="dimmed">
-                Move <Text component="span" fw={600} c="dark.0">{currentTrack.name}</Text> from{" "}
-                <Text component="span" fw={500}>{selectedPlaylist.name}</Text> to{" "}
-                <Text component="span" fw={500}>{moveConfirmTarget.playlistName}</Text>?
+                Remove <Text component="span" fw={600} c="dark.0">{currentTrack.name}</Text> from{" "}
+                <Text component="span" fw={500}>{selectedPlaylist.name}</Text>? It won’t be added to any other playlist.
               </Text>
               <Group position="right" spacing="xs">
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => setMoveConfirmTarget(null)}
+                  onClick={() => setRemoveConfirmOpen(false)}
                 >
                   Cancel
                 </Button>
                 <Button
                   size="sm"
-                  color="green"
-                  loading={moveLoading === moveConfirmTarget.playlistId}
-                  onClick={async () => {
-                    await handleMoveToPlaylist(moveConfirmTarget.playlistId);
-                    setMoveConfirmTarget(null);
-                  }}
+                  color="red"
+                  loading={removeLoading}
+                  onClick={handleRemoveFromPlaylist}
                 >
-                  Confirm
+                  Remove
                 </Button>
               </Group>
             </Stack>
+          </Modal>
+
+          <Button
+            size="xs"
+            variant="light"
+            color="red"
+            mb="md"
+            onClick={() => setRemoveConfirmOpen(true)}
+          >
+            Remove from playlist
+          </Button>
+
+          {playlistItems.length > 1 && (
+            <>
+              <Divider my="xl" />
+              <Group position="apart" align="center">
+                <Text size="xs" c="dimmed">
+                  Track {currentIndex + 1} of {playlistItems.length} in this
+                  playlist
+                </Text>
+                <Group spacing="xs">
+                  <UnstyledButton
+                    onClick={() =>
+                      setCurrentIndex((i) =>
+                        i > 0 ? i - 1 : playlistItems.length - 1
+                      )
+                    }
+                    style={{ fontSize: 13, color: COLORS.primary }}
+                  >
+                    Previous track
+                  </UnstyledButton>
+                  <UnstyledButton
+                    onClick={() =>
+                      setCurrentIndex((i) =>
+                        i < playlistItems.length - 1 ? i + 1 : 0
+                      )
+                    }
+                    style={{ fontSize: 13, color: COLORS.primary }}
+                  >
+                    Next track
+                  </UnstyledButton>
+                </Group>
+              </Group>
+            </>
           )}
-        </Modal>
+        </Box>
 
-        <Text
-          size="sm"
-          fw={500}
-          c="dimmed"
-          mb="sm"
-          style={{ display: "flex", alignItems: "center", gap: 8 }}
+        <Box
+          style={{
+            width: 280,
+            flexShrink: 0,
+            borderLeft: "1px solid rgba(255,255,255,0.06)",
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
+          }}
         >
-          <SparklesIcon />
-          Recommended playlists
-        </Text>
-        <Text size="xs" c="dimmed" mb="md">
-          Playlists where this artist appears most often
-        </Text>
-
-        {recommendationPlaylistIds.length === 0 ? (
-          <Text size="sm" c="dimmed">
-            No other playlists with this artist in your library.
-          </Text>
-        ) : (
-          <Stack spacing="xs">
-            {recommendationPlaylistIds.map(
-              (rec) =>
-                rec.id && (
-                  <Group key={rec.id} position="apart">
-                    <Box style={{ minWidth: 0 }}>
-                      <Text size="sm" fw={500} lineClamp={1}>
-                        {rec.playlistName}
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        {rec.count} track{rec.count !== 1 ? "s" : ""} by this
-                        artist
-                      </Text>
-                    </Box>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      color="green"
-                      loading={moveLoading === rec.id}
-                      onClick={() =>
-                        setMoveConfirmTarget({
-                          playlistId: rec.id!,
-                          playlistName: rec.playlistName,
-                        })
-                      }
-                    >
-                      Move here
-                    </Button>
-                  </Group>
-                )
-            )}
-          </Stack>
-        )}
-
-        {playlistItems.length > 1 && (
-          <>
-            <Divider my="xl" />
-            <Group position="apart" align="center">
-              <Text size="xs" c="dimmed">
-                Track {currentIndex + 1} of {playlistItems.length} in this
-                playlist
+          <Box
+            style={{
+              padding: "16px 16px 12px",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              flexShrink: 0,
+            }}
+          >
+            <Text
+              size="sm"
+              fw={500}
+              c="dimmed"
+              style={{ display: "flex", alignItems: "center", gap: 8 }}
+            >
+              <SparklesIcon />
+              Recommended playlists
+            </Text>
+          </Box>
+          <Box
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflow: "auto",
+              padding: 12,
+            }}
+          >
+            {recommendationPlaylistIds.length === 0 ? (
+              <Text size="sm" c="dimmed">
+                No matching playlists.
               </Text>
-              <UnstyledButton
-                onClick={() =>
-                  setCurrentIndex((i) =>
-                    i < playlistItems.length - 1 ? i + 1 : 0
-                  )
-                }
-                style={{ fontSize: 13, color: COLORS.primary }}
-              >
-                Next track
-              </UnstyledButton>
-            </Group>
-          </>
-        )}
+            ) : (
+              <Stack spacing="xs">
+                {recommendationPlaylistIds.map(
+                  (rec) =>
+                    rec.id && (
+                      <Group key={rec.id} position="apart" noWrap spacing="xs">
+                        <Box style={{ minWidth: 0, flex: 1 }}>
+                          <Text size="sm" fw={500} lineClamp={1}>
+                            {rec.playlistName}
+                          </Text>
+                          <Text size="xs" c="dimmed">
+                            {rec.count} track{rec.count !== 1 ? "s" : ""} by this
+                            artist
+                          </Text>
+                        </Box>
+                        <Button
+                          size="xs"
+                          variant="light"
+                          color="green"
+                          loading={moveLoading === rec.id}
+                          onClick={() =>
+                            setMoveConfirmTarget({
+                              playlistId: rec.id!,
+                              playlistName: rec.playlistName,
+                            })
+                          }
+                        >
+                          Move here
+                        </Button>
+                      </Group>
+                    )
+                )}
+              </Stack>
+            )}
+          </Box>
+        </Box>
       </Box>
     );
   }
 
   if (selectedPlaylist && playlistItems.length === 0) {
     return (
-      <Box style={{ padding: 24, maxWidth: 560, margin: "0 auto" }}>
-        <Group position="apart" align="center" mb="lg">
+      <Box style={{ flex: 1, minWidth: 0, minHeight: 0, padding: 24 }}>
+        <Group align="center" spacing="xs" mb="lg">
           <Text size="sm" c="dimmed">
-            Sorting playlist
+            Sorting
+          </Text>
+          <Text size="sm" fw={600}>
+            {selectedPlaylist.name}
           </Text>
           <UnstyledButton
             onClick={handleClearPlaylist}
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 6,
+              gap: 4,
               color: "var(--mantine-color-dark-2)",
-              fontSize: 13,
+              fontSize: 12,
             }}
           >
             <ClearIcon />
-            <span>Clear & search again</span>
+            <span>Clear</span>
           </UnstyledButton>
         </Group>
-        <Text fw={600} size="lg" mb="xl">
-          {selectedPlaylist.name}
-        </Text>
         <Text c="dimmed">This playlist has no tracks in cache yet.</Text>
       </Box>
     );
@@ -542,14 +657,14 @@ export default function Sorter({
   return (
     <Box
       style={{
+        flex: 1,
+        minWidth: 0,
+        minHeight: 0,
         padding: 24,
-        maxWidth: 480,
-        margin: "0 auto",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
-        minHeight: "60vh",
       }}
     >
       <Text fw={600} size="lg" mb="xs">
@@ -568,7 +683,7 @@ export default function Sorter({
           data={filteredPlaylists.map((p) => p.name)}
           onItemSubmit={(item) => handleSelectPlaylist(item.value)}
           size="md"
-          style={{ width: "100%" }}
+          style={{ width: "100%", maxWidth: 400 }}
           styles={{
             input: { borderRadius: 12 },
           }}
