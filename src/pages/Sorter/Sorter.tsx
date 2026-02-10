@@ -13,8 +13,14 @@ import {
   Modal,
 } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
-import { getCachedPlaylists, getCachedTracksForPlaylists } from "../../api/spotifyCache";
-import { removeTracksFromPlaylist, addTracksToPlaylist } from "../../api/spotify";
+import {
+  getCachedPlaylists,
+  getCachedTracksForPlaylists,
+} from "../../api/spotifyCache";
+import {
+  removeTracksFromPlaylist,
+  addTracksToPlaylist,
+} from "../../api/spotify";
 import { usePlayer } from "../../contexts/PlayerContext";
 import type { Track } from "../../hooks/useTracks";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -94,10 +100,10 @@ const SparklesIcon = () => (
 function getRecommendations(
   allTracks: Track[],
   currentPlaylistName: string,
-  currentArtistNames: string[]
+  currentArtistNames: string[],
 ): { playlistName: string; count: number }[] {
   const artistSet = new Set(
-    currentArtistNames.map((a) => a.toLowerCase().trim())
+    currentArtistNames.map((a) => a.toLowerCase().trim()),
   );
   const byPlaylist = new Map<string, number>();
   for (const t of allTracks) {
@@ -105,10 +111,7 @@ function getRecommendations(
     const trackArtists = t.artists.map((a) => a.name.toLowerCase().trim());
     const hasOverlap = trackArtists.some((a) => artistSet.has(a));
     if (hasOverlap) {
-      byPlaylist.set(
-        t.playlistName,
-        (byPlaylist.get(t.playlistName) ?? 0) + 1
-      );
+      byPlaylist.set(t.playlistName, (byPlaylist.get(t.playlistName) ?? 0) + 1);
     }
   }
   return [...byPlaylist.entries()]
@@ -156,7 +159,7 @@ export default function Sorter({
             id: p.id,
             name: p.name,
             snapshot_id: p.snapshot_id ?? "",
-          }))
+          })),
         );
       }
       if (!cancelled) setPlaylistsLoading(false);
@@ -178,9 +181,11 @@ export default function Sorter({
     ]).then((map) => {
       if (cancelled) return;
       const entry = map?.get(selectedPlaylist.id);
-      const items = (entry?.items ?? []) as Array<{ track?: SpotifyTrackObject }>;
+      const items = (entry?.items ?? []) as Array<{
+        track?: SpotifyTrackObject;
+      }>;
       const valid = items.filter(
-        (i) => i?.track?.id && i?.track?.uri
+        (i) => i?.track?.id && i?.track?.uri,
       ) as Array<{ track: SpotifyTrackObject }>;
       setPlaylistItems(valid);
       setCurrentIndex(0);
@@ -204,24 +209,39 @@ export default function Sorter({
   const recommendations = useMemo(() => {
     if (!currentTrack || !selectedPlaylist) return [];
     const artistNames = currentTrack.artists.map((a) => a.name);
-    return getRecommendations(
-      allTracks,
-      selectedPlaylist.name,
-      artistNames
-    );
+    return getRecommendations(allTracks, selectedPlaylist.name, artistNames);
   }, [allTracks, currentTrack, selectedPlaylist]);
 
-  const recommendationPlaylistIds = useMemo(() => {
+  const sidebarPlaylists = useMemo(() => {
     const nameToId = new Map(playlists.map((p) => [p.name, p.id]));
-    return recommendations.map((r) => ({
-      ...r,
-      id: nameToId.get(r.playlistName),
-    }));
-  }, [playlists, recommendations]);
+    const withCount: { id: string; name: string; count: number }[] =
+      recommendations
+        .map((r) => ({
+          id: nameToId.get(r.playlistName),
+          name: r.playlistName,
+          count: r.count,
+        }))
+        .filter(
+          (x): x is { id: string; name: string; count: number } => !!x.id,
+        );
+    const recommendedIds = new Set(withCount.map((x) => x.id));
+    const withoutCount = playlists
+      .filter((p) => p.id !== selectedPlaylist?.id && !recommendedIds.has(p.id))
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        count: undefined as number | undefined,
+      }));
+    return [...withCount, ...withoutCount] as {
+      id: string;
+      name: string;
+      count?: number;
+    }[];
+  }, [playlists, recommendations, selectedPlaylist?.id]);
 
   const handleSelectPlaylist = (name: string) => {
     const p = playlists.find(
-      (x) => x.name.toLowerCase() === name.toLowerCase()
+      (x) => x.name.toLowerCase() === name.toLowerCase(),
     );
     if (p) {
       setSelectedPlaylist({
@@ -253,7 +273,7 @@ export default function Sorter({
         accessToken,
         selectedPlaylist.id,
         [currentTrack.uri],
-        selectedPlaylist.snapshotId
+        selectedPlaylist.snapshotId,
       );
       if (!removeResult) {
         setMoveLoading(null);
@@ -262,18 +282,16 @@ export default function Sorter({
       const addResult = await addTracksToPlaylist(
         accessToken,
         targetPlaylistId,
-        [currentTrack.uri]
+        [currentTrack.uri],
       );
       if (!addResult) {
         setMoveLoading(null);
         return;
       }
       setSelectedPlaylist((prev) =>
-        prev ? { ...prev, snapshotId: removeResult.snapshot_id } : null
+        prev ? { ...prev, snapshotId: removeResult.snapshot_id } : null,
       );
-      setPlaylistItems((prev) =>
-        prev.filter((_, i) => i !== currentIndex)
-      );
+      setPlaylistItems((prev) => prev.filter((_, i) => i !== currentIndex));
       if (currentIndex >= playlistItems.length - 1 && currentIndex > 0) {
         setCurrentIndex(currentIndex - 1);
       }
@@ -296,11 +314,11 @@ export default function Sorter({
         accessToken,
         selectedPlaylist.id,
         [currentTrack.uri],
-        selectedPlaylist.snapshotId
+        selectedPlaylist.snapshotId,
       );
       if (!removeResult) return;
       setSelectedPlaylist((prev) =>
-        prev ? { ...prev, snapshotId: removeResult.snapshot_id } : null
+        prev ? { ...prev, snapshotId: removeResult.snapshot_id } : null,
       );
       setPlaylistItems((prev) => prev.filter((_, i) => i !== currentIndex));
       if (currentIndex >= playlistItems.length - 1 && currentIndex > 0) {
@@ -442,9 +460,19 @@ export default function Sorter({
             {moveConfirmTarget && (
               <Stack spacing="md">
                 <Text size="sm" c="dimmed">
-                  Move <Text component="span" fw={600} c="dark.0">{currentTrack.name}</Text> from{" "}
-                  <Text component="span" fw={500}>{selectedPlaylist.name}</Text> to{" "}
-                  <Text component="span" fw={500}>{moveConfirmTarget.playlistName}</Text>?
+                  Move{" "}
+                  <Text component="span" fw={600} c="dark.0">
+                    {currentTrack.name}
+                  </Text>{" "}
+                  from{" "}
+                  <Text component="span" fw={500}>
+                    {selectedPlaylist.name}
+                  </Text>{" "}
+                  to{" "}
+                  <Text component="span" fw={500}>
+                    {moveConfirmTarget.playlistName}
+                  </Text>
+                  ?
                 </Text>
                 <Group position="right" spacing="xs">
                   <Button
@@ -478,8 +506,15 @@ export default function Sorter({
           >
             <Stack spacing="md">
               <Text size="sm" c="dimmed">
-                Remove <Text component="span" fw={600} c="dark.0">{currentTrack.name}</Text> from{" "}
-                <Text component="span" fw={500}>{selectedPlaylist.name}</Text>? It won’t be added to any other playlist.
+                Remove{" "}
+                <Text component="span" fw={600} c="dark.0">
+                  {currentTrack.name}
+                </Text>{" "}
+                from{" "}
+                <Text component="span" fw={500}>
+                  {selectedPlaylist.name}
+                </Text>
+                ? It won’t be added to any other playlist.
               </Text>
               <Group position="right" spacing="xs">
                 <Button
@@ -523,7 +558,7 @@ export default function Sorter({
                   <UnstyledButton
                     onClick={() =>
                       setCurrentIndex((i) =>
-                        i > 0 ? i - 1 : playlistItems.length - 1
+                        i > 0 ? i - 1 : playlistItems.length - 1,
                       )
                     }
                     style={{ fontSize: 13, color: COLORS.primary }}
@@ -533,7 +568,7 @@ export default function Sorter({
                   <UnstyledButton
                     onClick={() =>
                       setCurrentIndex((i) =>
-                        i < playlistItems.length - 1 ? i + 1 : 0
+                        i < playlistItems.length - 1 ? i + 1 : 0,
                       )
                     }
                     style={{ fontSize: 13, color: COLORS.primary }}
@@ -581,42 +616,65 @@ export default function Sorter({
               padding: 12,
             }}
           >
-            {recommendationPlaylistIds.length === 0 ? (
+            {sidebarPlaylists.length === 0 ? (
               <Text size="sm" c="dimmed">
-                No matching playlists.
+                No other playlists.
               </Text>
             ) : (
               <Stack spacing="xs">
-                {recommendationPlaylistIds.map(
-                  (rec) =>
-                    rec.id && (
-                      <Group key={rec.id} position="apart" noWrap spacing="xs">
-                        <Box style={{ minWidth: 0, flex: 1 }}>
-                          <Text size="sm" fw={500} lineClamp={1}>
-                            {rec.playlistName}
+                {sidebarPlaylists.map((item) => (
+                  <Group
+                    key={item.id}
+                    position="apart"
+                    noWrap
+                    spacing="xs"
+                    align="flex-start"
+                  >
+                    <Box style={{ minWidth: 0, flex: 1 }}>
+                      <Text
+                        size="sm"
+                        fw={500}
+                        lineClamp={1}
+                        style={{ lineHeight: 1.25, display: "block" }}
+                      >
+                        {item.name}
+                      </Text>
+                      <Box
+                        style={{
+                          height: 18,
+                          lineHeight: "18px",
+                          fontSize: 12,
+                          overflow: "hidden",
+                        }}
+                      >
+                        {item.count != null ? (
+                          <Text
+                            size="xs"
+                            c="dimmed"
+                            style={{ lineHeight: "18px", display: "block" }}
+                          >
+                            {item.count} track{item.count !== 1 ? "s" : ""} by
+                            this artist
                           </Text>
-                          <Text size="xs" c="dimmed">
-                            {rec.count} track{rec.count !== 1 ? "s" : ""} by this
-                            artist
-                          </Text>
-                        </Box>
-                        <Button
-                          size="xs"
-                          variant="light"
-                          color="green"
-                          loading={moveLoading === rec.id}
-                          onClick={() =>
-                            setMoveConfirmTarget({
-                              playlistId: rec.id!,
-                              playlistName: rec.playlistName,
-                            })
-                          }
-                        >
-                          Move here
-                        </Button>
-                      </Group>
-                    )
-                )}
+                        ) : null}
+                      </Box>
+                    </Box>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      color="green"
+                      loading={moveLoading === item.id}
+                      onClick={() =>
+                        setMoveConfirmTarget({
+                          playlistId: item.id,
+                          playlistName: item.name,
+                        })
+                      }
+                    >
+                      Move here
+                    </Button>
+                  </Group>
+                ))}
               </Stack>
             )}
           </Box>
