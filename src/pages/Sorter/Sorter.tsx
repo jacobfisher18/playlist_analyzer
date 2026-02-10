@@ -582,7 +582,7 @@ export default function Sorter({
                       <td
                         style={{
                           padding: "6px 12px",
-                          paddingLeft: isCurrent ? 18 : 12,
+                          paddingLeft: 18,
                           borderBottom: "1px solid rgba(255,255,255,0.04)",
                           verticalAlign: "middle",
                           overflow: "hidden",
