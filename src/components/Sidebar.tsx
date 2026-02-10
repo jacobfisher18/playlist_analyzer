@@ -2,6 +2,7 @@ import { Box, Text, UnstyledButton, Loader, Avatar, Menu } from "@mantine/core";
 import { useLocation, useNavigate } from "react-router-dom";
 import { COLORS } from "../styles/colors";
 import { SpotifyUser } from "../types/user";
+import { SortifyLogoIcon } from "./SortifyLogoIcon";
 
 const SIDEBAR_WIDTH = 240;
 
@@ -119,10 +120,14 @@ const Sidebar = ({
         <UnstyledButton
           onClick={onLogoClick}
           style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
             color: COLORS.primary,
             letterSpacing: "-0.02em",
           }}
         >
+          <SortifyLogoIcon size={28} strokeColor={COLORS.sidebarBg} />
           <Text fw={700} size="xl">
             Sortify
           </Text>
