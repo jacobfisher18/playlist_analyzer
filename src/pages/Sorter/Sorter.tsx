@@ -24,6 +24,10 @@ import {
 import { usePlayer } from "../../contexts/PlayerContext";
 import type { Track } from "../../hooks/useTracks";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  getVersionGroupKey,
+  getLatestInEachGroup,
+} from "../../utilities/playlistVersion";
 
 /** Spotify track object as returned in playlist items (cache/API) */
 export interface SpotifyTrackObject {
@@ -246,19 +250,35 @@ export default function Sorter({
 
   const sidebarPlaylists = useMemo(() => {
     const nameToId = new Map(playlists.map((p) => [p.name, p.id]));
-    const withCount: { id: string; name: string; count: number }[] =
-      recommendations
-        .map((r) => ({
-          id: nameToId.get(r.playlistName),
-          name: r.playlistName,
-          count: r.count,
-        }))
-        .filter(
-          (x): x is { id: string; name: string; count: number } => !!x.id,
-        );
-    const recommendedIds = new Set(withCount.map((x) => x.id));
+    const latestByGroup = getLatestInEachGroup(playlists);
+
+    // Aggregate recommendations by version group: sum counts, show only latest
+    const groupCounts = new Map<string, number>();
+    for (const r of recommendations) {
+      const groupKey = getVersionGroupKey(r.playlistName);
+      groupCounts.set(groupKey, (groupCounts.get(groupKey) ?? 0) + r.count);
+    }
+    const withCount: { id: string; name: string; count: number }[] = [];
+    for (const [groupKey, count] of groupCounts) {
+      const latestName = latestByGroup.get(groupKey);
+      if (!latestName) continue;
+      const id = nameToId.get(latestName);
+      if (!id) continue;
+      withCount.push({ id, name: latestName, count });
+    }
+    withCount.sort((a, b) => b.count - a.count);
+
+    const recommendedGroupKeys = new Set(groupCounts.keys());
+    const latestNames = new Set(latestByGroup.values());
+
+    // Only show latest version per group; exclude selected and recommended groups
     const withoutCount = playlists
-      .filter((p) => p.id !== selectedPlaylist?.id && !recommendedIds.has(p.id))
+      .filter(
+        (p) =>
+          p.id !== selectedPlaylist?.id &&
+          latestNames.has(p.name) &&
+          !recommendedGroupKeys.has(getVersionGroupKey(p.name)),
+      )
       .map((p) => ({
         id: p.id,
         name: p.name,
