@@ -8,10 +8,9 @@ import Sidebar from "../../components/Sidebar";
 import PlayerBar from "../../components/PlayerBar";
 import Sorter from "../Sorter/Sorter";
 import { PlayerProvider, usePlayer } from "../../contexts/PlayerContext";
-import { getUserProfile } from "../../api/spotify";
-import { SpotifyUser } from "../../types/user";
 import { supabase } from "../../api/supabase";
-import { useTracks } from "../../hooks/useTracks";
+import { useTracks, useUserProfile } from "../../hooks";
+import type { SpotifyUser } from "../../types/user";
 
 const SPOTIFY_USER_ID_KEY = "spotify_user_id";
 
@@ -110,13 +109,13 @@ const Home = (): JSX.Element => {
   const navigate = useNavigate();
   const location = useLocation();
   const isSorterView = location.pathname === "/home/sorter";
-  const [user, setUser] = useState<SpotifyUser | null>(null);
   const [searchText, setSearchText] = useState("");
-  const [spotifyUserId, setSpotifyUserId] = useState<string | null>(() =>
-    typeof window !== "undefined"
-      ? localStorage.getItem(SPOTIFY_USER_ID_KEY)
-      : null,
+  const { data: userProfile, isLoading: userProfileLoading } = useUserProfile(
+    accessToken ?? null
   );
+  const spotifyUserId =
+    userProfile?.id ??
+    (typeof window !== "undefined" ? localStorage.getItem(SPOTIFY_USER_ID_KEY) : null);
   const { allTracks, loading, error, isSyncing } = useTracks(
     accessToken ?? "",
     spotifyUserId,
@@ -124,31 +123,26 @@ const Home = (): JSX.Element => {
   );
 
   useEffect(() => {
-    const init = async () => {
-      if (!accessToken) {
-        navigate("/");
-        return;
-      }
-      const userProfile = await getUserProfile(accessToken);
-      if (userProfile) {
-        setUser(userProfile);
-        setSpotifyUserId(userProfile.id);
-        localStorage.setItem(SPOTIFY_USER_ID_KEY, userProfile.id);
-      } else {
-        localStorage.removeItem(SPOTIFY_USER_ID_KEY);
-        removeAccessToken();
-        navigate("/");
-      }
-    };
-    init();
-  }, [accessToken]);
+    if (!accessToken) {
+      navigate("/");
+      return;
+    }
+    if (userProfileLoading) return;
+    if (userProfile) {
+      localStorage.setItem(SPOTIFY_USER_ID_KEY, userProfile.id);
+    } else if (!userProfileLoading && !userProfile) {
+      localStorage.removeItem(SPOTIFY_USER_ID_KEY);
+      removeAccessToken();
+      navigate("/");
+    }
+  }, [accessToken, userProfile, userProfileLoading, navigate, removeAccessToken]);
 
   return (
     <PlayerProvider accessToken={accessToken ?? undefined}>
       <HomeLayout
         removeAccessToken={removeAccessToken}
         navigate={navigate}
-        user={user}
+        user={userProfile ?? null}
         allTracks={allTracks}
         loading={loading}
         error={error}

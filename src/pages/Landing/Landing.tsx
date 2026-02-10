@@ -2,31 +2,26 @@ import { useEffect } from "react";
 import queryString from "query-string";
 import { useAccessToken } from "../../hooks/useAccessToken";
 import { useNavigate } from "react-router-dom";
-import { authWithSpotify, exchangeCodeForToken } from "../../api/auth";
+import { useSpotifyAuth, useAuthCodeExchange } from "../../hooks";
 import { Button, Title, Container, Space, Text } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
 
 export const Landing = (): JSX.Element => {
   const [accessToken, setAccessToken] = useAccessToken();
   const navigate = useNavigate();
+  const query = queryString.parse(location.search);
+  const code = typeof query.code === "string" ? query.code : null;
+  const { loginWithSpotify } = useSpotifyAuth();
+  const { data: token } = useAuthCodeExchange(code);
 
   useEffect(() => {
-    const run = async () => {
-      const query = queryString.parse(location.search);
-      const code = typeof query.code === "string" ? query.code : "";
-
-      if (code) {
-        const access_token = await exchangeCodeForToken(code);
-        if (access_token) {
-          setAccessToken(access_token);
-          navigate("/home", { replace: true });
-        }
-      } else if (accessToken) {
-        navigate("/home");
-      }
-    };
-    run();
-  }, [navigate, setAccessToken, accessToken]);
+    if (token) {
+      setAccessToken(token);
+      navigate("/home", { replace: true });
+    } else if (accessToken && !code) {
+      navigate("/home");
+    }
+  }, [token, accessToken, code, navigate, setAccessToken]);
 
   return (
     <div
@@ -58,7 +53,7 @@ export const Landing = (): JSX.Element => {
         </Text>
         <Space h="xl" />
         <Button
-          onClick={() => authWithSpotify()}
+          onClick={() => loginWithSpotify()}
           style={{
             backgroundColor: COLORS.primary,
             borderRadius: 100,

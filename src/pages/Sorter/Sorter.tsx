@@ -15,12 +15,13 @@ import {
   Menu,
 } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
-import { getCachedTracksForPlaylists } from "../../api/spotifyCache";
-import { useCachedPlaylists } from "../../hooks/useCachedPlaylists";
 import {
-  removeTracksFromPlaylist,
-  addTracksToPlaylist,
-} from "../../api/spotify";
+  useCachedPlaylists,
+  useCachedPlaylistTracks,
+  useSorterExclusions,
+  useRemoveTracksFromPlaylist,
+  useAddTracksToPlaylist,
+} from "../../hooks";
 import { usePlayer } from "../../contexts/PlayerContext";
 import type { Track } from "../../hooks/useTracks";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -28,11 +29,6 @@ import {
   getVersionGroupKey,
   getLatestInEachGroup,
 } from "../../utilities/playlistVersion";
-import {
-  getExcludedPlaylistIds,
-  excludePlaylist,
-  includePlaylist,
-} from "../../api/sorterExclusions";
 
 /** Spotify track object as returned in playlist items (cache/API) */
 export interface SpotifyTrackObject {
@@ -206,9 +202,6 @@ export default function Sorter({
     name: string;
     snapshotId: string;
   } | null>(null);
-  const [playlistItems, setPlaylistItems] = useState<
-    Array<{ track: SpotifyTrackObject }>
-  >([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [moveLoading, setMoveLoading] = useState<string | null>(null);
   const [moveConfirmTarget, setMoveConfirmTarget] = useState<{
@@ -217,49 +210,31 @@ export default function Sorter({
   } | null>(null);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [removeLoading, setRemoveLoading] = useState(false);
-  const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set());
-  const [excludeLoading, setExcludeLoading] = useState<string | null>(null);
-  const [includeLoading, setIncludeLoading] = useState<string | null>(null);
+  const [excludeLoadingId, setExcludeLoadingId] = useState<string | null>(null);
+  const [includeLoadingId, setIncludeLoadingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!supabase || !spotifyUserId) {
-      setExcludedIds(new Set());
-      return;
-    }
-    let cancelled = false;
-    getExcludedPlaylistIds(supabase, spotifyUserId).then((ids) => {
-      if (!cancelled) setExcludedIds(ids);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [supabase, spotifyUserId]);
+  const { excludedIds, excludePlaylist, includePlaylist } = useSorterExclusions(
+    supabase,
+    spotifyUserId
+  );
 
+  const { data: rawPlaylistItems = [] } = useCachedPlaylistTracks(
+    supabase,
+    spotifyUserId,
+    selectedPlaylist?.id ?? null
+  );
+  const [playlistItems, setPlaylistItems] = useState<
+    Array<{ track: SpotifyTrackObject }>
+  >([]);
   useEffect(() => {
-    if (!selectedPlaylist || !supabase || !spotifyUserId) {
-      setPlaylistItems([]);
-      setCurrentIndex(0);
-      return;
-    }
-    let cancelled = false;
-    getCachedTracksForPlaylists(supabase, spotifyUserId, [
-      selectedPlaylist.id,
-    ]).then((map) => {
-      if (cancelled) return;
-      const entry = map?.get(selectedPlaylist.id);
-      const items = (entry?.items ?? []) as Array<{
-        track?: SpotifyTrackObject;
-      }>;
-      const valid = items.filter(
-        (i) => i?.track?.id && i?.track?.uri,
-      ) as Array<{ track: SpotifyTrackObject }>;
-      setPlaylistItems(valid);
-      setCurrentIndex(0);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedPlaylist?.id, supabase, spotifyUserId]);
+    setPlaylistItems(
+      rawPlaylistItems as Array<{ track: SpotifyTrackObject }>
+    );
+    setCurrentIndex(0);
+  }, [rawPlaylistItems, selectedPlaylist?.id]);
+
+  const removeTracksMutation = useRemoveTracksFromPlaylist();
+  const addTracksMutation = useAddTracksToPlaylist();
 
   const filteredPlaylists = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -366,25 +341,17 @@ export default function Sorter({
       return;
     setMoveLoading(targetPlaylistId);
     try {
-      const removeResult = await removeTracksFromPlaylist(
+      const removeResult = await removeTracksMutation.mutateAsync({
         accessToken,
-        selectedPlaylist.id,
-        [currentTrack.uri],
-        selectedPlaylist.snapshotId,
-      );
-      if (!removeResult) {
-        setMoveLoading(null);
-        return;
-      }
-      const addResult = await addTracksToPlaylist(
+        playlistId: selectedPlaylist.id,
+        trackUris: [currentTrack.uri],
+        snapshotId: selectedPlaylist.snapshotId,
+      });
+      await addTracksMutation.mutateAsync({
         accessToken,
-        targetPlaylistId,
-        [currentTrack.uri],
-      );
-      if (!addResult) {
-        setMoveLoading(null);
-        return;
-      }
+        playlistId: targetPlaylistId,
+        trackUris: [currentTrack.uri],
+      });
       setSelectedPlaylist((prev) =>
         prev ? { ...prev, snapshotId: removeResult.snapshot_id } : null,
       );
@@ -392,6 +359,8 @@ export default function Sorter({
       if (currentIndex >= playlistItems.length - 1 && currentIndex > 0) {
         setCurrentIndex(currentIndex - 1);
       }
+    } catch {
+      // Mutation throws on failure
     } finally {
       setMoveLoading(null);
     }
@@ -407,13 +376,12 @@ export default function Sorter({
       return;
     setRemoveLoading(true);
     try {
-      const removeResult = await removeTracksFromPlaylist(
+      const removeResult = await removeTracksMutation.mutateAsync({
         accessToken,
-        selectedPlaylist.id,
-        [currentTrack.uri],
-        selectedPlaylist.snapshotId,
-      );
-      if (!removeResult) return;
+        playlistId: selectedPlaylist.id,
+        trackUris: [currentTrack.uri],
+        snapshotId: selectedPlaylist.snapshotId,
+      });
       setSelectedPlaylist((prev) =>
         prev ? { ...prev, snapshotId: removeResult.snapshot_id } : null,
       );
@@ -422,6 +390,8 @@ export default function Sorter({
         setCurrentIndex(currentIndex - 1);
       }
       setRemoveConfirmOpen(false);
+    } catch {
+      // Mutation throws on failure
     } finally {
       setRemoveLoading(false);
     }
@@ -937,21 +907,14 @@ export default function Sorter({
                             icon={<BanIcon />}
                             color="red"
                             onClick={async () => {
-                              if (!supabase || !spotifyUserId) return;
-                              setExcludeLoading(item.id);
-                              const ok = await excludePlaylist(
-                                supabase,
-                                spotifyUserId,
-                                item.id,
-                              );
-                              if (ok) {
-                                setExcludedIds((prev) =>
-                                  new Set([...prev, item.id]),
-                                );
+                              setExcludeLoadingId(item.id);
+                              try {
+                                await excludePlaylist(item.id);
+                              } finally {
+                                setExcludeLoadingId(null);
                               }
-                              setExcludeLoading(null);
                             }}
-                            disabled={excludeLoading === item.id}
+                            disabled={excludeLoadingId === item.id}
                           >
                             Exclude from recommendations
                           </Menu.Item>
@@ -1009,23 +972,14 @@ export default function Sorter({
                             size="xs"
                             variant="subtle"
                             color="gray"
-                            loading={includeLoading === p.id}
+                            loading={includeLoadingId === p.id}
                             onClick={async () => {
-                              if (!supabase || !spotifyUserId) return;
-                              setIncludeLoading(p.id);
-                              const ok = await includePlaylist(
-                                supabase,
-                                spotifyUserId,
-                                p.id,
-                              );
-                              if (ok) {
-                                setExcludedIds((prev) => {
-                                  const next = new Set(prev);
-                                  next.delete(p.id);
-                                  return next;
-                                });
+                              setIncludeLoadingId(p.id);
+                              try {
+                                await includePlaylist(p.id);
+                              } finally {
+                                setIncludeLoadingId(null);
                               }
-                              setIncludeLoading(null);
                             }}
                           >
                             Include
