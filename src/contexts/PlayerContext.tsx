@@ -14,6 +14,10 @@ import {
   pausePlayback,
   getPlaybackState,
 } from "../api/spotifyPlayback";
+import type {
+  SpotifyPlayerInstance,
+  WebPlaybackState,
+} from "../types/spotify-player";
 
 interface PlayerContextValue {
   isPlaying: boolean;
@@ -25,6 +29,14 @@ interface PlayerContextValue {
   pause: () => Promise<void>;
   /** Set the track that should play when pressing play without a current track (e.g. Sorter's selected track). */
   setSelectedTrackUri: (uri: string | null) => void;
+  /** Current position in ms. 0 when no track. */
+  position: number;
+  /** Track duration in ms. 0 when no track. */
+  duration: number;
+  /** Whether seeking is allowed (false during ads). */
+  canSeek: boolean;
+  /** Seek to position in ms. */
+  seek: (positionMs: number) => Promise<void>;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -44,16 +56,52 @@ export function PlayerProvider({
   const [isPlaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const connectPromiseRef = useRef<Promise<string> | null>(null);
+  const [position, setPosition] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [canSeek, setCanSeek] = useState(true);
+  const connectPromiseRef = useRef<Promise<{ deviceId: string; player: SpotifyPlayerInstance }> | null>(null);
+  const playerRef = useRef<SpotifyPlayerInstance | null>(null);
   const justPausedRef = useRef(false);
+  const lastStateRef = useRef<{ position: number; timestamp: number } | null>(null);
+
+  const updateFromState = useCallback((state: WebPlaybackState | null) => {
+    if (!state) {
+      setPosition(0);
+      setDuration(0);
+      lastStateRef.current = null;
+      return;
+    }
+    const pos = state.position;
+    const dur = state.duration ?? state.track_window?.current_track?.duration_ms ?? 0;
+    setPosition(pos);
+    setDuration(dur);
+    setCanSeek(state.disallows?.seeking !== true);
+    lastStateRef.current = { position: pos, timestamp: Date.now() };
+  }, []);
+
+  const setupPlayerListeners = useCallback(
+    (player: SpotifyPlayerInstance) => {
+      player.addListener("player_state_changed", (state: unknown) => {
+        updateFromState(state as WebPlaybackState | null);
+        if (state) setIsPlaying(!(state as WebPlaybackState).paused);
+      });
+      player.getCurrentState().then((state) => {
+        updateFromState(state);
+        if (state) setIsPlaying(!state.paused);
+      });
+    },
+    [updateFromState]
+  );
 
   useEffect(() => {
     if (!accessToken || deviceId) return;
     if (!connectPromiseRef.current) {
       connectPromiseRef.current = connectPlayer(() => accessToken)
-        .then(({ deviceId: id }) => {
+        .then(({ deviceId: id, player }) => {
           setDeviceId(id);
-          return id;
+          playerRef.current = player;
+          setupPlayerListeners(player);
+          return { deviceId: id, player };
         })
         .catch((err) => {
           connectPromiseRef.current = null;
@@ -63,7 +111,7 @@ export function PlayerProvider({
           connectPromiseRef.current = null;
         });
     }
-  }, [accessToken, deviceId]);
+  }, [accessToken, deviceId, setupPlayerListeners]);
 
   useEffect(() => {
     if (!accessToken || !deviceId) return;
@@ -72,23 +120,51 @@ export function PlayerProvider({
     });
   }, [accessToken, deviceId]);
 
+  useEffect(() => {
+    if (!isPlaying || duration <= 0) return;
+    const INTERVAL_MS = 250;
+    const id = setInterval(() => {
+      const last = lastStateRef.current;
+      if (!last) return;
+      const elapsed = Date.now() - last.timestamp;
+      const next = Math.min(last.position + elapsed, duration);
+      setPosition(next);
+      lastStateRef.current = { position: next, timestamp: Date.now() };
+    }, INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [isPlaying, duration]);
+
+  const seek = useCallback(async (positionMs: number) => {
+    const player = playerRef.current;
+    if (!player || !canSeek) return;
+    try {
+      await player.seek(Math.max(0, Math.floor(positionMs)));
+      setPosition(positionMs);
+      lastStateRef.current = { position: positionMs, timestamp: Date.now() };
+    } catch {
+      // Ignore seek errors
+    }
+  }, [canSeek]);
+
   const ensureDeviceId = useCallback(async (): Promise<string> => {
     if (deviceId) return deviceId;
     const promise =
       connectPromiseRef.current ??
       (connectPromiseRef.current = connectPlayer(() => accessToken!)
-        .then(({ deviceId: d }) => {
+        .then(({ deviceId: d, player }) => {
           setDeviceId(d);
-          return d;
+          playerRef.current = player;
+          setupPlayerListeners(player);
+          return { deviceId: d, player };
         })
         .catch((err) => {
           connectPromiseRef.current = null;
           throw err;
         }));
-    const id = await promise;
+    const { deviceId: id } = await promise;
     connectPromiseRef.current = null;
     return id;
-  }, [accessToken, deviceId]);
+  }, [accessToken, deviceId, setupPlayerListeners]);
 
   const playTrack = useCallback(
     async (trackUri: string) => {
@@ -157,6 +233,10 @@ export function PlayerProvider({
     togglePlayPause,
     pause,
     setSelectedTrackUri,
+    position,
+    duration,
+    canSeek,
+    seek,
   };
 
   return (

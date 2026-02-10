@@ -18,7 +18,7 @@ interface SpotifyPlayerInstance {
     callback: (data: { message: string }) => void
   ): boolean;
   removeListener(event: string): boolean;
-  getCurrentState(): Promise<{ paused: boolean } | null>;
+  getCurrentState(): Promise<WebPlaybackState | null>;
   setVolume(volume: number): Promise<void>;
   pause(): Promise<void>;
   resume(): Promise<void>;
@@ -27,6 +27,16 @@ interface SpotifyPlayerInstance {
   previousTrack(): Promise<void>;
   nextTrack(): Promise<void>;
   activateElement(): Promise<void>;
+}
+
+export interface WebPlaybackState {
+  paused: boolean;
+  position: number;
+  duration?: number;
+  track_window?: {
+    current_track: { duration_ms: number };
+  };
+  disallows?: { seeking?: boolean };
 }
 
 declare global {
