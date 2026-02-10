@@ -15,10 +15,8 @@ import {
   Menu,
 } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
-import {
-  getCachedPlaylists,
-  getCachedTracksForPlaylists,
-} from "../../api/spotifyCache";
+import { getCachedTracksForPlaylists } from "../../api/spotifyCache";
+import { useCachedPlaylists } from "../../hooks/useCachedPlaylists";
 import {
   removeTracksFromPlaylist,
   addTracksToPlaylist,
@@ -43,12 +41,6 @@ export interface SpotifyTrackObject {
   name: string;
   artists: Array<{ name: string }>;
   album: { name: string; images?: Array<{ url: string }> };
-}
-
-interface PlaylistOption {
-  id: string;
-  name: string;
-  snapshot_id: string;
 }
 
 interface SorterProps {
@@ -204,8 +196,10 @@ export default function Sorter({
   supabase,
 }: SorterProps): JSX.Element {
   const { playTrack, setSelectedTrackUri } = usePlayer();
-  const [playlists, setPlaylists] = useState<PlaylistOption[]>([]);
-  const [playlistsLoading, setPlaylistsLoading] = useState(true);
+  const { data: playlists = [], isLoading: playlistsLoading } = useCachedPlaylists(
+    supabase,
+    spotifyUserId
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlaylist, setSelectedPlaylist] = useState<{
     id: string;
@@ -226,29 +220,6 @@ export default function Sorter({
   const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set());
   const [excludeLoading, setExcludeLoading] = useState<string | null>(null);
   const [includeLoading, setIncludeLoading] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!supabase || !spotifyUserId) {
-      setPlaylistsLoading(false);
-      return;
-    }
-    let cancelled = false;
-    getCachedPlaylists(supabase, spotifyUserId).then((cached) => {
-      if (!cancelled && cached) {
-        setPlaylists(
-          cached.map((p) => ({
-            id: p.id,
-            name: p.name,
-            snapshot_id: p.snapshot_id ?? "",
-          })),
-        );
-      }
-      if (!cancelled) setPlaylistsLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [supabase, spotifyUserId]);
 
   useEffect(() => {
     if (!supabase || !spotifyUserId) {
