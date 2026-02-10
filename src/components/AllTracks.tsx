@@ -6,7 +6,6 @@ import {
   Loader,
   Container,
   Text,
-  Title,
   Badge,
   Box,
   Flex,
@@ -188,12 +187,12 @@ const AllTracks = (props: Props): JSX.Element => {
         width: "100%",
         display: "flex",
         flexDirection: "column",
-        alignItems: hasQuery ? "stretch" : "center",
-        justifyContent: hasQuery ? "flex-start" : "center",
+        alignItems: "flex-start",
+        justifyContent: "flex-start",
       }}
     >
       {loading && !hasQuery ? (
-        <Flex direction="column" align="center" gap="md">
+        <Flex direction="column" align="flex-start" gap="md">
           <Loader variant="bars" />
           <Text size="sm" c="dimmed">
             Loading tracks from Spotify
@@ -204,20 +203,23 @@ const AllTracks = (props: Props): JSX.Element => {
           style={{
             display: "flex",
             flexDirection: "column",
-            alignItems: hasQuery ? "stretch" : "center",
+            alignItems: "flex-start",
             width: "100%",
+            maxWidth: hasQuery ? undefined : 500,
           }}
         >
-          {!hasQuery && (
-            <Title order={2} mb="xl">
-              Search across all your playlists
-            </Title>
-          )}
+          <Text component="h2" fw={600} size="xl" mb="xs" style={{ lineHeight: 1.3 }}>
+            Search across all your playlists
+          </Text>
+          <Text size="sm" c="dimmed" mb="lg">
+            Search a track name, artist, or album to find where it lives.
+          </Text>
           <form
             onSubmit={(e) => {
               e.preventDefault();
               applyFilter();
             }}
+            style={{ width: "100%" }}
           >
             <TextInput
               size="md"
@@ -228,13 +230,13 @@ const AllTracks = (props: Props): JSX.Element => {
               styles={{
                 input: {
                   borderRadius: 12,
-                  width: hasQuery ? "100%" : "500px",
+                  width: "100%",
                 },
               }}
             />
           </form>
 
-          {hasQuery && <Box mt="lg">{resultsContent}</Box>}
+          {hasQuery && <Box mt="lg" style={{ width: "100%" }}>{resultsContent}</Box>}
         </Box>
       )}
     </Box>

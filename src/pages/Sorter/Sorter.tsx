@@ -895,10 +895,10 @@ export default function Sorter({
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
-        justifyContent: "center",
+        justifyContent: "flex-start",
       }}
     >
-      <Text fw={600} size="lg" mb="xs">
+      <Text component="h2" fw={600} size="xl" mb="xs" style={{ lineHeight: 1.3 }}>
         Sort a playlist
       </Text>
       <Text size="sm" c="dimmed" mb="lg">
@@ -914,7 +914,7 @@ export default function Sorter({
           data={filteredPlaylists.map((p) => p.name)}
           onItemSubmit={(item) => handleSelectPlaylist(item.value)}
           size="md"
-          style={{ width: "100%", maxWidth: 400 }}
+          style={{ width: "100%", maxWidth: 500 }}
           styles={{
             input: { borderRadius: 12 },
           }}
