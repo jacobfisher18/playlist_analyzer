@@ -894,36 +894,40 @@ export default function Sorter({
                     position="apart"
                     noWrap
                     spacing="xs"
-                    align="flex-start"
+                    align="center"
                   >
-                    <Box style={{ minWidth: 0, flex: 1 }}>
+                    <Box
+                      style={{
+                        minWidth: 0,
+                        flex: 1,
+                        overflow: "hidden",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                      }}
+                    >
                       <Text
-                        size="sm"
+                        size="xs"
                         fw={500}
-                        lineClamp={1}
-                        style={{ lineHeight: 1.25, display: "block" }}
+                        style={{
+                          display: "block",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
                       >
                         {item.name}
                       </Text>
-                      <Box
-                        style={{
-                          height: 18,
-                          lineHeight: "18px",
-                          fontSize: 12,
-                          overflow: "hidden",
-                        }}
-                      >
-                        {item.count != null ? (
-                          <Text
-                            size="xs"
-                            c="dimmed"
-                            style={{ lineHeight: "18px", display: "block" }}
-                          >
-                            {item.count} track{item.count !== 1 ? "s" : ""} by
-                            this artist
-                          </Text>
-                        ) : null}
-                      </Box>
+                      {item.count != null ? (
+                        <Text
+                          size="xs"
+                          c="dimmed"
+                          style={{ lineHeight: 1.25, display: "block" }}
+                        >
+                          {item.count} track{item.count !== 1 ? "s" : ""} by
+                          this artist
+                        </Text>
+                      ) : null}
                     </Box>
                     <Group spacing={4} noWrap>
                       <Button
@@ -1005,18 +1009,26 @@ export default function Sorter({
                           spacing="xs"
                           align="center"
                         >
-                          <Text
-                            size="sm"
-                            c="dimmed"
-                            lineClamp={1}
+                          <Box
                             style={{
                               minWidth: 0,
                               flex: 1,
-                              textDecoration: "line-through",
+                              overflow: "hidden",
                             }}
                           >
-                            {p.name}
-                          </Text>
+                            <Text
+                              size="xs"
+                              c="dimmed"
+                              style={{
+                                textDecoration: "line-through",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {p.name}
+                            </Text>
+                          </Box>
                           <Button
                             size="xs"
                             variant="subtle"
