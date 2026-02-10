@@ -9,7 +9,6 @@ import {
   Loader,
   Paper,
   Button,
-  Divider,
   Modal,
 } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
@@ -94,6 +93,38 @@ const SparklesIcon = () => (
     <path d="M19 17v4" />
     <path d="M3 5h4" />
     <path d="M17 19h4" />
+  </svg>
+);
+
+const ChevronLeftIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m15 18-6-6 6-6" />
+  </svg>
+);
+
+const ChevronRightIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m9 18 6-6-6-6" />
   </svg>
 );
 
@@ -331,10 +362,6 @@ export default function Sorter({
   };
 
   if (selectedPlaylist && currentTrack) {
-    const albumImage =
-      currentTrack.album?.images?.[0]?.url ??
-      currentTrack.album?.images?.[1]?.url;
-
     return (
       <Box
         style={{
@@ -348,108 +375,248 @@ export default function Sorter({
           style={{
             flex: 1,
             minWidth: 0,
-            padding: 24,
-            overflow: "auto",
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
           }}
         >
-          <Group align="center" spacing="xs" mb="lg">
-            <Text size="sm" c="dimmed">
-              Sorting
-            </Text>
-            <Text size="sm" fw={600}>
-              {selectedPlaylist.name}
-            </Text>
-            <UnstyledButton
-              onClick={handleClearPlaylist}
+          <Box style={{ padding: 24, paddingBottom: 0, flexShrink: 0 }}>
+            <Group align="center" spacing="xs" mb="lg">
+              <Text size="sm" c="dimmed">
+                Sorting
+              </Text>
+              <Text size="sm" fw={600}>
+                {selectedPlaylist.name}
+              </Text>
+              <UnstyledButton
+                onClick={handleClearPlaylist}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  color: "var(--mantine-color-dark-2)",
+                  fontSize: 12,
+                }}
+              >
+                <ClearIcon />
+                <span>Clear</span>
+              </UnstyledButton>
+            </Group>
+
+            <Paper
+              p="md"
+              radius="md"
+              mb="md"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                color: "var(--mantine-color-dark-2)",
-                fontSize: 12,
+                backgroundColor: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                position: "sticky",
+                top: 0,
+                zIndex: 1,
               }}
             >
-              <ClearIcon />
-              <span>Clear</span>
-            </UnstyledButton>
-          </Group>
-
-          <Paper
-            p="md"
-            radius="md"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.06)",
-              marginBottom: 24,
-            }}
-          >
-            <Group noWrap spacing="md" align="flex-start">
-              <UnstyledButton
-                onClick={() => playTrack(currentTrack.uri)}
-                onDoubleClick={() => playTrack(currentTrack.uri)}
-                style={{ lineHeight: 0, flexShrink: 0 }}
-                className="sorter-cover-button"
-              >
-                <Box
-                  style={{
-                    width: 112,
-                    height: 112,
-                    borderRadius: 8,
-                    overflow: "hidden",
-                    backgroundColor: "rgba(0,0,0,0.3)",
-                    position: "relative",
-                  }}
+              <Group noWrap spacing="md" align="flex-start">
+                <UnstyledButton
+                  onClick={() => playTrack(currentTrack.uri)}
+                  onDoubleClick={() => playTrack(currentTrack.uri)}
+                  style={{ lineHeight: 0, flexShrink: 0 }}
+                  className="sorter-cover-button"
                 >
-                  {albumImage ? (
-                    <img
-                      src={albumImage}
-                      alt=""
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : null}
                   <Box
                     style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: "rgba(0,0,0,0.4)",
-                      opacity: 0,
-                      transition: "opacity 0.15s ease",
+                      width: 112,
+                      height: 112,
+                      borderRadius: 8,
+                      overflow: "hidden",
+                      backgroundColor: "rgba(0,0,0,0.3)",
+                      position: "relative",
                     }}
-                    className="sorter-play-overlay"
                   >
-                    <Box style={{ color: "#fff" }}>
-                      <PlayIcon />
+                    {(currentTrack.album?.images?.[0]?.url ??
+                      currentTrack.album?.images?.[1]?.url) ? (
+                      <img
+                        src={
+                          currentTrack.album?.images?.[0]?.url ??
+                          currentTrack.album?.images?.[1]?.url
+                        }
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : null}
+                    <Box
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(0,0,0,0.4)",
+                        opacity: 0,
+                        transition: "opacity 0.15s ease",
+                      }}
+                      className="sorter-play-overlay"
+                    >
+                      <Box style={{ color: "#fff" }}>
+                        <PlayIcon />
+                      </Box>
                     </Box>
                   </Box>
+                </UnstyledButton>
+                <Box
+                  style={{ flex: 1, minWidth: 0 }}
+                  onDoubleClick={() => playTrack(currentTrack.uri)}
+                >
+                  <Text fw={600} size="md" lineClamp={1}>
+                    {currentTrack.name}
+                  </Text>
+                  <Text size="sm" c="dimmed" lineClamp={1} mt={4}>
+                    {currentTrack.artists.map((a) => a.name).join(", ")}
+                  </Text>
+                  <Text size="xs" c="dimmed" lineClamp={1} mt={2}>
+                    {currentTrack.album?.name}
+                  </Text>
+                  <Group position="apart" align="center" mt="sm" spacing="xs">
+                    <Box />
+                    <Button
+                      size="xs"
+                      variant="light"
+                      color="red"
+                      onClick={() => setRemoveConfirmOpen(true)}
+                    >
+                      Remove from playlist
+                    </Button>
+                  </Group>
                 </Box>
-              </UnstyledButton>
-              <Box
-                style={{ flex: 1, minWidth: 0 }}
-                onDoubleClick={() => playTrack(currentTrack.uri)}
-              >
-                <Text fw={600} size="md" lineClamp={1}>
-                  {currentTrack.name}
-                </Text>
-                <Text size="sm" c="dimmed" lineClamp={1} mt={4}>
-                  {currentTrack.artists.map((a) => a.name).join(", ")}
-                </Text>
-                <Text size="xs" c="dimmed" lineClamp={1} mt={2}>
-                  {currentTrack.album?.name}
-                </Text>
-              </Box>
-            </Group>
-          </Paper>
+              </Group>
+            </Paper>
+          </Box>
 
-          <style>{`
+          <Box
+            style={{
+              flex: 1,
+              minHeight: 0,
+              overflow: "auto",
+              padding: "0 24px 24px",
+            }}
+          >
+            <style>{`
           .sorter-cover-button:hover .sorter-play-overlay { opacity: 1 !important; }
+          .sorter-track-row:hover { background-color: rgba(255,255,255,0.06) !important; }
+          .sorter-track-row:hover td { border-bottom-color: rgba(255,255,255,0.06) !important; }
         `}</style>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                tableLayout: "fixed",
+              }}
+            >
+              <thead
+                style={{
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 1,
+                  backgroundColor: COLORS.mainBg,
+                  boxShadow: "0 1px 0 0 rgba(255,255,255,0.08)",
+                }}
+              >
+                <tr>
+                  <th
+                    style={{
+                      padding: "6px 12px",
+                      textAlign: "left",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "var(--mantine-color-dark-2)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      width: "50%",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Track
+                  </th>
+                  <th
+                    style={{
+                      padding: "6px 12px",
+                      textAlign: "left",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "var(--mantine-color-dark-2)",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      width: "50%",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Artist
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {playlistItems.map((item, i) => {
+                  const track = item.track;
+                  const isCurrent = i === currentIndex;
+                  return (
+                    <tr
+                      key={track.uri}
+                      onClick={() => setCurrentIndex(i)}
+                      style={{
+                        cursor: "pointer",
+                        backgroundColor: isCurrent
+                          ? "rgba(255,255,255,0.08)"
+                          : "transparent",
+                      }}
+                      className="sorter-track-row"
+                    >
+                      <td
+                        style={{
+                          padding: "6px 12px",
+                          paddingLeft: isCurrent ? 18 : 12,
+                          borderBottom: "1px solid rgba(255,255,255,0.04)",
+                          verticalAlign: "middle",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          maxWidth: 0,
+                          boxShadow: isCurrent
+                            ? `inset 3px 0 0 0 ${COLORS.primary}`
+                            : undefined,
+                        }}
+                      >
+                        <Text size="sm" lineClamp={1} style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {track.name}
+                        </Text>
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 12px",
+                          borderBottom: "1px solid rgba(255,255,255,0.04)",
+                          verticalAlign: "middle",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          maxWidth: 0,
+                        }}
+                      >
+                        <Text size="sm" c="dimmed" lineClamp={1} style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {track.artists.map((a) => a.name).join(", ")}
+                        </Text>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Box>
 
           <Modal
             opened={moveConfirmTarget != null}
@@ -536,48 +703,54 @@ export default function Sorter({
             </Stack>
           </Modal>
 
-          <Button
-            size="xs"
-            variant="light"
-            color="red"
-            mb="md"
-            onClick={() => setRemoveConfirmOpen(true)}
-          >
-            Remove from playlist
-          </Button>
-
           {playlistItems.length > 1 && (
-            <>
-              <Divider my="xl" />
-              <Group position="apart" align="center">
-                <Text size="xs" c="dimmed">
-                  Track {currentIndex + 1} of {playlistItems.length} in this
-                  playlist
-                </Text>
-                <Group spacing="xs">
-                  <UnstyledButton
-                    onClick={() =>
-                      setCurrentIndex((i) =>
-                        i > 0 ? i - 1 : playlistItems.length - 1,
-                      )
-                    }
-                    style={{ fontSize: 13, color: COLORS.primary }}
-                  >
-                    Previous track
-                  </UnstyledButton>
-                  <UnstyledButton
-                    onClick={() =>
-                      setCurrentIndex((i) =>
-                        i < playlistItems.length - 1 ? i + 1 : 0,
-                      )
-                    }
-                    style={{ fontSize: 13, color: COLORS.primary }}
-                  >
-                    Next track
-                  </UnstyledButton>
-                </Group>
+            <Box
+              style={{
+                flexShrink: 0,
+                padding: "12px 24px",
+                borderTop: "1px solid rgba(255,255,255,0.06)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 16,
+              }}
+            >
+              <Text size="xs" c="dimmed">
+                Track {currentIndex + 1} of {playlistItems.length}
+              </Text>
+              <Group spacing="xs">
+                <UnstyledButton
+                  onClick={() =>
+                    setCurrentIndex((i) =>
+                      i > 0 ? i - 1 : playlistItems.length - 1,
+                    )
+                  }
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    color: COLORS.primary,
+                  }}
+                  title="Previous track"
+                >
+                  <ChevronLeftIcon />
+                </UnstyledButton>
+                <UnstyledButton
+                  onClick={() =>
+                    setCurrentIndex((i) =>
+                      i < playlistItems.length - 1 ? i + 1 : 0,
+                    )
+                  }
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    color: COLORS.primary,
+                  }}
+                  title="Next track"
+                >
+                  <ChevronRightIcon />
+                </UnstyledButton>
               </Group>
-            </>
+            </Box>
           )}
         </Box>
 
