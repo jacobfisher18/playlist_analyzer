@@ -11,6 +11,8 @@ import {
   Paper,
   Button,
   Modal,
+  ActionIcon,
+  Menu,
 } from "@mantine/core";
 import { COLORS } from "../../styles/colors";
 import {
@@ -28,6 +30,11 @@ import {
   getVersionGroupKey,
   getLatestInEachGroup,
 } from "../../utilities/playlistVersion";
+import {
+  getExcludedPlaylistIds,
+  excludePlaylist,
+  includePlaylist,
+} from "../../api/sorterExclusions";
 
 /** Spotify track object as returned in playlist items (cache/API) */
 export interface SpotifyTrackObject {
@@ -133,6 +140,41 @@ const ChevronRightIcon = () => (
   </svg>
 );
 
+const DotsVerticalIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="12" cy="5" r="1" />
+    <circle cx="12" cy="19" r="1" />
+  </svg>
+);
+
+const BanIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="m4.9 4.9 14.2 14.2" />
+  </svg>
+);
+
 function getRecommendations(
   allTracks: Track[],
   currentPlaylistName: string,
@@ -181,6 +223,9 @@ export default function Sorter({
   } | null>(null);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [removeLoading, setRemoveLoading] = useState(false);
+  const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set());
+  const [excludeLoading, setExcludeLoading] = useState<string | null>(null);
+  const [includeLoading, setIncludeLoading] = useState<string | null>(null);
 
   useEffect(() => {
     if (!supabase || !spotifyUserId) {
@@ -199,6 +244,20 @@ export default function Sorter({
         );
       }
       if (!cancelled) setPlaylistsLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase, spotifyUserId]);
+
+  useEffect(() => {
+    if (!supabase || !spotifyUserId) {
+      setExcludedIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    getExcludedPlaylistIds(supabase, spotifyUserId).then((ids) => {
+      if (!cancelled) setExcludedIds(ids);
     });
     return () => {
       cancelled = true;
@@ -284,12 +343,22 @@ export default function Sorter({
         name: p.name,
         count: undefined as number | undefined,
       }));
-    return [...withCount, ...withoutCount] as {
+    const combined = [...withCount, ...withoutCount] as {
       id: string;
       name: string;
       count?: number;
     }[];
-  }, [playlists, recommendations, selectedPlaylist?.id]);
+    return combined.filter((item) => !excludedIds.has(item.id));
+  }, [playlists, recommendations, selectedPlaylist?.id, excludedIds]);
+
+  const excludedPlaylistsForSidebar = useMemo(() => {
+    return playlists.filter(
+      (p) =>
+        excludedIds.has(p.id) &&
+        p.id !== selectedPlaylist?.id &&
+        selectedPlaylist != null,
+    );
+  }, [playlists, excludedIds, selectedPlaylist?.id]);
 
   const handleSelectPlaylist = (name: string) => {
     const p = playlists.find(
@@ -810,13 +879,16 @@ export default function Sorter({
               padding: 12,
             }}
           >
-            {sidebarPlaylists.length === 0 ? (
+            {sidebarPlaylists.length === 0 &&
+            excludedPlaylistsForSidebar.length === 0 ? (
               <Text size="sm" c="dimmed">
                 No other playlists.
               </Text>
             ) : (
-              <Stack spacing="xs">
-                {sidebarPlaylists.map((item) => (
+              <Stack spacing="md">
+                {sidebarPlaylists.length > 0 ? (
+                  <Stack spacing="xs">
+                    {sidebarPlaylists.map((item) => (
                   <Group
                     key={item.id}
                     position="apart"
@@ -853,22 +925,128 @@ export default function Sorter({
                         ) : null}
                       </Box>
                     </Box>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      color="green"
-                      loading={moveLoading === item.id}
-                      onClick={() =>
-                        setMoveConfirmTarget({
-                          playlistId: item.id,
-                          playlistName: item.name,
-                        })
-                      }
-                    >
-                      Move here
-                    </Button>
+                    <Group spacing={4} noWrap>
+                      <Button
+                        size="xs"
+                        variant="light"
+                        color="green"
+                        loading={moveLoading === item.id}
+                        onClick={() =>
+                          setMoveConfirmTarget({
+                            playlistId: item.id,
+                            playlistName: item.name,
+                          })
+                        }
+                      >
+                        Move here
+                      </Button>
+                      <Menu position="bottom-end" withArrow>
+                        <Menu.Target>
+                          <ActionIcon
+                            size="sm"
+                            variant="subtle"
+                            color="gray"
+                            title="More options"
+                            aria-label="More options"
+                          >
+                            <DotsVerticalIcon />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item
+                            icon={<BanIcon />}
+                            color="red"
+                            onClick={async () => {
+                              if (!supabase || !spotifyUserId) return;
+                              setExcludeLoading(item.id);
+                              const ok = await excludePlaylist(
+                                supabase,
+                                spotifyUserId,
+                                item.id,
+                              );
+                              if (ok) {
+                                setExcludedIds((prev) =>
+                                  new Set([...prev, item.id]),
+                                );
+                              }
+                              setExcludeLoading(null);
+                            }}
+                            disabled={excludeLoading === item.id}
+                          >
+                            Exclude from recommendations
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Group>
                   </Group>
                 ))}
+                  </Stack>
+                ) : null}
+                {excludedPlaylistsForSidebar.length > 0 ? (
+                  <Box>
+                    <Text
+                      size="xs"
+                      fw={500}
+                      c="dimmed"
+                      mb="xs"
+                      style={{
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Excluded
+                    </Text>
+                    <Stack spacing="xs">
+                      {excludedPlaylistsForSidebar.map((p) => (
+                        <Group
+                          key={p.id}
+                          position="apart"
+                          noWrap
+                          spacing="xs"
+                          align="center"
+                        >
+                          <Text
+                            size="sm"
+                            c="dimmed"
+                            lineClamp={1}
+                            style={{
+                              minWidth: 0,
+                              flex: 1,
+                              textDecoration: "line-through",
+                            }}
+                          >
+                            {p.name}
+                          </Text>
+                          <Button
+                            size="xs"
+                            variant="subtle"
+                            color="gray"
+                            loading={includeLoading === p.id}
+                            onClick={async () => {
+                              if (!supabase || !spotifyUserId) return;
+                              setIncludeLoading(p.id);
+                              const ok = await includePlaylist(
+                                supabase,
+                                spotifyUserId,
+                                p.id,
+                              );
+                              if (ok) {
+                                setExcludedIds((prev) => {
+                                  const next = new Set(prev);
+                                  next.delete(p.id);
+                                  return next;
+                                });
+                              }
+                              setIncludeLoading(null);
+                            }}
+                          >
+                            Include
+                          </Button>
+                        </Group>
+                      ))}
+                    </Stack>
+                  </Box>
+                ) : null}
               </Stack>
             )}
           </Box>
