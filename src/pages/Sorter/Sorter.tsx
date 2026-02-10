@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import {
   Box,
+  Flex,
   Text,
   Autocomplete,
   UnstyledButton,
@@ -898,28 +899,41 @@ export default function Sorter({
         justifyContent: "flex-start",
       }}
     >
-      <Text component="h2" fw={600} size="xl" mb="xs" style={{ lineHeight: 1.3 }}>
-        Sort a playlist
-      </Text>
-      <Text size="sm" c="dimmed" mb="lg">
-        Search your playlists and we’ll help you move tracks to better fits.
-      </Text>
       {playlistsLoading ? (
-        <Loader color={COLORS.primary} />
+        <Flex
+          direction="column"
+          align="center"
+          justify="center"
+          gap="md"
+          style={{ flex: 1, minHeight: 0, width: "100%" }}
+        >
+          <Loader color={COLORS.primary} />
+          <Text size="sm" c="dimmed">
+            Loading playlists...
+          </Text>
+        </Flex>
       ) : (
-        <Autocomplete
-          placeholder="Search playlists by name..."
-          value={searchQuery}
-          onChange={setSearchQuery}
-          data={filteredPlaylists.map((p) => p.name)}
-          onItemSubmit={(item) => handleSelectPlaylist(item.value)}
-          size="md"
-          style={{ width: "100%", maxWidth: 500 }}
-          styles={{
-            input: { borderRadius: 12 },
-          }}
-          filter={() => true}
-        />
+        <>
+          <Text component="h2" fw={600} size="xl" mb="xs" style={{ lineHeight: 1.3 }}>
+            Sort a playlist
+          </Text>
+          <Text size="sm" c="dimmed" mb="lg">
+            Search your playlists and we'll help you move tracks to better fits.
+          </Text>
+          <Autocomplete
+            placeholder="Search playlists by name..."
+            value={searchQuery}
+            onChange={setSearchQuery}
+            data={filteredPlaylists.map((p) => p.name)}
+            onItemSubmit={(item) => handleSelectPlaylist(item.value)}
+            size="md"
+            style={{ width: "100%", maxWidth: 500 }}
+            styles={{
+              input: { borderRadius: 12 },
+            }}
+            filter={() => true}
+          />
+        </>
       )}
     </Box>
   );

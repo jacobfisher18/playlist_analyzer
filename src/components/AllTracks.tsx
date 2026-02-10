@@ -182,7 +182,7 @@ const AllTracks = (props: Props): JSX.Element => {
   return (
     <Box
       style={{
-        minHeight: "100vh",
+        ...(loading && !hasQuery ? { flex: 1, minHeight: 0 } : { minHeight: "100vh" }),
         padding: 24,
         width: "100%",
         display: "flex",
@@ -192,7 +192,13 @@ const AllTracks = (props: Props): JSX.Element => {
       }}
     >
       {loading && !hasQuery ? (
-        <Flex direction="column" align="flex-start" gap="md">
+        <Flex
+          direction="column"
+          align="center"
+          justify="center"
+          gap="md"
+          style={{ flex: 1, minHeight: 0, width: "100%" }}
+        >
           <Loader variant="bars" />
           <Text size="sm" c="dimmed">
             Loading tracks from Spotify
