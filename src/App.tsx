@@ -32,7 +32,6 @@ const App = (): JSX.Element => {
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/home" element={<Home />} />
-              <Route path="/home/player" element={<Home />} />
               <Route path="/home/sorter" element={<Home />} />
             </Routes>
           </Router>

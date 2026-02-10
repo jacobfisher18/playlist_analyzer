@@ -6,7 +6,6 @@ import { useAccessToken } from "../../hooks/useAccessToken";
 import AllTracks from "../../components/AllTracks";
 import Sidebar from "../../components/Sidebar";
 import PlayerBar from "../../components/PlayerBar";
-import Player from "../Player/Player";
 import Sorter from "../Sorter/Sorter";
 import { PlayerProvider, usePlayer } from "../../contexts/PlayerContext";
 import { getUserProfile } from "../../api/spotify";
@@ -26,7 +25,6 @@ function HomeLayout({
   isSyncing,
   searchText,
   setSearchText,
-  isPlayerView,
   isSorterView,
   spotifyUserId,
   accessToken,
@@ -41,7 +39,6 @@ function HomeLayout({
   isSyncing: boolean;
   searchText: string;
   setSearchText: (s: string) => void;
-  isPlayerView: boolean;
   isSorterView: boolean;
   spotifyUserId: string | null;
   accessToken: string | null;
@@ -83,9 +80,7 @@ function HomeLayout({
             overflow: "auto",
           }}
         >
-          {isPlayerView ? (
-            <Player />
-          ) : isSorterView ? (
+          {isSorterView ? (
             <Sorter
               allTracks={allTracks}
               accessToken={accessToken}
@@ -112,7 +107,6 @@ const Home = (): JSX.Element => {
   const [accessToken, , removeAccessToken] = useAccessToken();
   const navigate = useNavigate();
   const location = useLocation();
-  const isPlayerView = location.pathname === "/home/player";
   const isSorterView = location.pathname === "/home/sorter";
   const [user, setUser] = useState<SpotifyUser | null>(null);
   const [searchText, setSearchText] = useState("");
@@ -159,7 +153,6 @@ const Home = (): JSX.Element => {
         isSyncing={isSyncing}
         searchText={searchText}
         setSearchText={setSearchText}
-        isPlayerView={isPlayerView}
         isSorterView={isSorterView}
         spotifyUserId={spotifyUserId}
         accessToken={accessToken ?? null}
