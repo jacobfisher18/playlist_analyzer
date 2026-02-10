@@ -203,7 +203,7 @@ export default function Sorter({
   spotifyUserId,
   supabase,
 }: SorterProps): JSX.Element {
-  const { playTrack } = usePlayer();
+  const { playTrack, setSelectedTrackUri } = usePlayer();
   const [playlists, setPlaylists] = useState<PlaylistOption[]>([]);
   const [playlistsLoading, setPlaylistsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -300,6 +300,11 @@ export default function Sorter({
 
   const currentItem = playlistItems[currentIndex];
   const currentTrack = currentItem?.track;
+
+  useEffect(() => {
+    setSelectedTrackUri(currentTrack?.uri ?? null);
+    return () => setSelectedTrackUri(null);
+  }, [currentTrack?.uri, setSelectedTrackUri]);
 
   const recommendations = useMemo(() => {
     if (!currentTrack || !selectedPlaylist) return [];

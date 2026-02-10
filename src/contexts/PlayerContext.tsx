@@ -23,6 +23,8 @@ interface PlayerContextValue {
   togglePlayPause: () => Promise<void>;
   /** Pause playback (e.g. on logout). No-op if not connected or not playing. */
   pause: () => Promise<void>;
+  /** Set the track that should play when pressing play without a current track (e.g. Sorter's selected track). */
+  setSelectedTrackUri: (uri: string | null) => void;
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null);
@@ -38,6 +40,7 @@ export function PlayerProvider({
 }): JSX.Element {
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [currentTrackUri, setCurrentTrackUri] = useState<string | null>(null);
+  const [selectedTrackUri, setSelectedTrackUri] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -122,12 +125,9 @@ export function PlayerProvider({
           await resumePlayback(accessToken, id);
           justPausedRef.current = false;
         } else {
-          await startPlayback(
-            accessToken,
-            id,
-            currentTrackUri ?? DEFAULT_TRACK_URI,
-          );
-          if (!currentTrackUri) setCurrentTrackUri(DEFAULT_TRACK_URI);
+          const uriToPlay = currentTrackUri ?? selectedTrackUri ?? DEFAULT_TRACK_URI;
+          await startPlayback(accessToken, id, uriToPlay);
+          if (!currentTrackUri) setCurrentTrackUri(uriToPlay);
         }
         setIsPlaying(true);
       }
@@ -136,7 +136,7 @@ export function PlayerProvider({
     } finally {
       setLoading(false);
     }
-  }, [accessToken, ensureDeviceId, isPlaying, currentTrackUri]);
+  }, [accessToken, ensureDeviceId, isPlaying, currentTrackUri, selectedTrackUri]);
 
   const pause = useCallback(async () => {
     if (!accessToken || !deviceId) return;
@@ -156,6 +156,7 @@ export function PlayerProvider({
     playTrack,
     togglePlayPause,
     pause,
+    setSelectedTrackUri,
   };
 
   return (
